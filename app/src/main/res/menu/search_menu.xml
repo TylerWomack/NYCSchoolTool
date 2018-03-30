@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent">
+
+    <item android:id="@+id/search_by_distance_button"
+        android:orderInCategory="100"
+        android:icon="@color/colorAccent"
+        android:title="Distance"
+        android:onClick="viewSchoolsByDistance"
+        />
+
+    <item android:id="@+id/search_by_safety_button"
+        android:orderInCategory="200"
+        android:icon="@color/colorAccent"
+        android:title="Perceived Safety"
+        android:onClick="viewSchoolsBySafety"/>
+
+    <item android:id="@+id/search_by_SAT_button"
+        android:orderInCategory="300"
+        android:icon="@color/colorAccent"
+        android:title="Average SAT Score"
+        android:onClick="viewSchoolsBySATScore"/>
+
+    <item android:id="@+id/search"
+        android:icon="@android:drawable/ic_menu_search"
+        app:actionViewClass="android.support.v7.widget.SearchView"
+        app:showAsAction="collapseActionView|ifRoom"
+        android:title="Search for a school:" />
+</menu>

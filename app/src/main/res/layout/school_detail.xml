@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    <TextView
+        android:id="@+id/school_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginHorizontal="16dp"
+        android:textColor="@color/title"
+        android:textSize="16dp"
+        android:textStyle="bold"
+
+        android:textAlignment="center"
+        tools:text="Henry Miller" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/school_name"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/linearLayout">
+
+
+        <TextView
+            android:id="@+id/neighborhood"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="test" />
+
+        <TextView
+            android:id="@+id/borough"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="test" />
+
+    </LinearLayout>
+
+
+        <TextView
+            android:id="@+id/grades_served_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Grades served:"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/linearLayout"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            style="@style/paddingForSchoolDetails"
+            />
+
+    <TextView
+        android:id="@+id/number_students_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/grades_served_text"
+        android:text="Number of students:"
+        style="@style/paddingForSchoolDetails"/>
+
+    <TextView
+        android:id="@+id/average_SAT_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/number_students_text"
+        style="@style/paddingForSchoolDetails"
+        android:text="Average SAT score:" />
+
+    <TextView
+        android:id="@+id/graduation_rate_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/average_SAT_text"
+        style="@style/paddingForSchoolDetails"
+        android:text="Graduation rate:" />
+
+    <TextView
+        android:id="@+id/college_career_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/graduation_rate_text"
+        style="@style/paddingForSchoolDetails"
+        android:text="College career rate:" />
+
+        <TextView
+            android:id="@+id/attendance_rate_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/college_career_text"
+            style="@style/paddingForSchoolDetails"
+            android:text="Attendance rate:" />
+
+    <TextView
+        android:id="@+id/percentage_safe_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/attendance_rate_text"
+        style="@style/paddingForSchoolDetails"
+        android:text="Percent of students that report feeling safe:" />
+
+    <TextView
+        android:id="@+id/average_SAT"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/average_SAT_text"
+        android:layout_alignBottom="@+id/average_SAT_text"
+        android:layout_toEndOf="@+id/average_SAT_text"
+        android:layout_toRightOf="@+id/average_SAT_text"
+        tools:text="test" />
+
+    <TextView
+        android:id="@+id/gradu_rate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/graduation_rate_text"
+        android:layout_alignBottom="@+id/graduation_rate_text"
+        android:layout_toEndOf="@+id/graduation_rate_text"
+        android:layout_toRightOf="@+id/graduation_rate_text"
+        tools:text="test" />
+
+        <TextView
+            android:id="@+id/attendance_rate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/attendance_rate_text"
+            android:layout_alignBottom="@+id/attendance_rate_text"
+            android:layout_toEndOf="@+id/attendance_rate_text"
+            android:layout_toRightOf="@+id/attendance_rate_text"
+            tools:text="test" />
+
+    <TextView
+        android:id="@+id/safe_rate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/percentage_safe_text"
+        android:layout_alignBottom="@+id/percentage_safe_text"
+        android:layout_toEndOf="@+id/percentage_safe_text"
+        android:layout_toRightOf="@+id/percentage_safe_text"
+        tools:text="test" />
+
+    <TextView
+        android:id="@+id/college_rate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/college_career_text"
+        android:layout_alignBottom="@+id/college_career_text"
+        android:layout_toEndOf="@+id/college_career_text"
+        android:layout_toRightOf="@+id/college_career_text"
+        tools:text="test" />
+
+    <TextView
+        android:id="@+id/num_students"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/number_students_text"
+        android:layout_alignBottom="@+id/number_students_text"
+        android:layout_toEndOf="@+id/number_students_text"
+        android:layout_toRightOf="@+id/number_students_text"
+        tools:text="test" />
+
+    <TextView
+        android:id="@+id/grades_served"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/grades_served_text"
+        android:layout_alignBottom="@+id/grades_served_text"
+        android:layout_toEndOf="@+id/grades_served_text"
+        android:layout_toRightOf="@+id/grades_served_text"
+        tools:text="test" />
+
+    <TextView
+        android:id="@+id/description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/percentage_safe_text"
+        android:layout_centerHorizontal="true"
+        android:paddingLeft="16dp"
+        android:paddingTop="8dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="16dp"
+        android:textStyle="italic"
+        tools:text="The Terre Haute North Vigo High School community is committed to providing a secure haven for learning. We strive to empower and to challenge all students to become educated, ethical, responsible citizens in a diverse, ever-changing world." />
+
+    </RelativeLayout>
+
+
+
+</ScrollView>
