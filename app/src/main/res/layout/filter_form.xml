@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/activity_horizontal_margin"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_margin="@dimen/activity_vertical_margin"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Filter Out Schools Who Do Not Offer:"
+            android:layout_gravity="center_horizontal"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_weight="0"
+                android:gravity="center_vertical"
+                android:text="Miniumum SAT:" />
+
+
+            <SeekBar
+                android:id="@+id/SAT_seek"
+                android:min="400"
+                android:max="1600"
+                android:progress="0"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="40dp"
+                />
+
+            <TextView
+                android:id="@+id/SAT_position"
+                android:layout_width="wrap_content"
+                android:layout_weight="0"
+                android:layout_height="wrap_content"
+                android:text=""
+                tools:text="1200"/>
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:gravity="center_vertical"
+                android:text="Percent feel safe:" />
+
+
+            <SeekBar
+                android:id="@+id/safety_seek"
+                android:min="0"
+                android:max="100"
+                android:progress="0"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                />
+            <TextView
+                android:id="@+id/safety_position"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                tools:text="80%"/>
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:gravity="center_vertical"
+                android:text="Minimum graduation rate:" />
+
+
+            <SeekBar
+                android:id="@+id/graduation_seek"
+                android:min="0"
+                android:max="100"
+                android:progress="0"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                />
+
+            <TextView
+                android:id="@+id/graduation_position"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                tools:text="80%"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:gravity="center_vertical"
+                android:text="AP classes offered:" />
+
+
+            <SeekBar
+                android:id="@+id/AP_seek"
+                android:min="0"
+                android:max="20"
+                android:progress="0"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                />
+
+            <TextView
+                android:id="@+id/AP_position"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                tools:text="10"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:gravity="center_vertical"
+                android:text="College career rate:" />
+
+
+            <SeekBar
+                android:id="@+id/college_seek"
+                android:min="0"
+                android:max="100"
+                android:progress="0"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+
+                />
+
+            <TextView
+                android:id="@+id/college_position"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                tools:text="75%"/>
+        </LinearLayout>
+
+        <TextView
+            android:layout_margin="@dimen/activity_vertical_margin"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Show Results From:"
+            android:layout_gravity="center_horizontal"/>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+
+            <CheckedTextView
+                android:id="@+id/manhattan_checkbox"
+                android:layout_width="0dp"
+                android:layout_height="24dp"
+                android:layout_weight="1"
+                android:textAlignment="center"
+                android:gravity="center"
+                android:text="Manhattan"
+                android:checkMark="?android:attr/textCheckMark"
+                android:background="@color/colorPrimary"
+                android:textColor="@color/white"
+                android:layout_margin="8dp"
+                />
+
+
+            <CheckedTextView
+                android:id="@+id/brooklyn_checkbox"
+                android:layout_width="0dp"
+                android:layout_height="24dp"
+                android:layout_weight="1"
+                android:textAlignment="center"
+                android:gravity="center"
+                android:text="Brooklyn"
+                android:checkMark="?android:attr/textCheckMark"
+                android:background="@color/colorPrimary"
+                android:textColor="@color/white"
+                android:layout_margin="8dp"/>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+
+            <CheckedTextView
+                android:id="@+id/bronx_checkbox"
+                android:layout_width="0dp"
+                android:layout_height="24dp"
+                android:layout_weight="1"
+                android:textAlignment="center"
+                android:gravity="center"
+                android:text="Bronx"
+                android:checkMark="?android:attr/textCheckMark"
+                android:background="@color/colorPrimary"
+                android:textColor="@color/white"
+                android:layout_margin="8dp" />
+
+            <CheckedTextView
+                android:id="@+id/queens_checkbox"
+                android:layout_width="0dp"
+                android:layout_height="24dp"
+                android:layout_weight="1"
+                android:textAlignment="center"
+                android:gravity="center"
+                android:text="Queens"
+                android:checkMark="?android:attr/textCheckMark"
+                android:background="@color/colorPrimary"
+                android:textColor="@color/white"
+                android:layout_margin="8dp" />
+
+            <CheckedTextView
+                android:id="@+id/staten_island_checkbox"
+                android:layout_width="0dp"
+                android:layout_height="24dp"
+                android:layout_weight="1"
+                android:textAlignment="center"
+                android:gravity="center"
+                android:text="Staten Is"
+                android:checkMark="?android:attr/textCheckMark"
+                android:background="@color/colorPrimary"
+                android:textColor="@color/white"
+                android:layout_margin="8dp"/>
+
+        </LinearLayout>
+
+
+        <Button
+            android:layout_margin="@dimen/activity_vertical_margin"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:text="Filter"
+            android:layout_gravity="center"
+            android:onClick="filterButtonClicked"/>
+
+    </LinearLayout>
+
+
+</android.support.constraint.ConstraintLayout>
