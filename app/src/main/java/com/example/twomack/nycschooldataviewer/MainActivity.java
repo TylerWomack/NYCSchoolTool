@@ -30,6 +30,7 @@ import com.example.twomack.nycschooldataviewer.viewmodel.MainViewModel;
 import com.jakewharton.rxbinding2.support.v7.widget.RxSearchView;
 import com.jakewharton.rxbinding2.support.v7.widget.SearchViewQueryTextEvent;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,10 +47,14 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
     private MainRecyclerViewAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private Networker networker;
+    private FilterActivity filterActivity;
     private MainViewModel viewModel;
     private Boolean searchDataIsSet;
     private List<DetailedSchool> searchData;
     public String[] usersLocation;
+    public ApplicationData applicationData;
+
+
 
     @Nullable @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -60,11 +65,15 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_main);
         setContentView(R.layout.loading_screen);
         ButterKnife.bind(this);
         searchDataIsSet = false;
         networker = new Networker();
+        //todo: testing
+        CompositeDisposableModule compositeDisposableModule = new CompositeDisposableModule();
+        viewModel = new MainViewModel(compositeDisposableModule);
+        filterActivity = new FilterActivity();
+        applicationData = ApplicationData.getInstance();
         configureObservables();
         progressBar.setProgress(25);
 
@@ -81,9 +90,6 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         mRecyclerView = findViewById(R.id.my_recycler_view);
         mRecyclerView.setHasFixedSize(true);
 
-        CompositeDisposableModule compositeDisposableModule = new CompositeDisposableModule();
-        viewModel = new MainViewModel(compositeDisposableModule);
-
         // use a linear layout manager
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
@@ -96,26 +102,23 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
 
     }
 
-    /**
-     * This function is designed be set only one time. Its intended use is for the app to make api calls in onCreate, gather the necessary data, and set it here.
-     * When the data is set, the program can then draw from it whenever necessary to receive a clean set of NYC school data. Note that setSearchData can only be called
-     * once with any effect - any further calls would do nothing.
-     * @param list A list of our complete data set of NYC schools, with appended SAT scores.
-     */
-    public void setSearchData(List<DetailedSchool> list) {
-        if (searchDataIsSet) {
-            return;
-        }
-        searchData = list;
-        searchDataIsSet = true;
+    //todo: evaluate this.
+    public List<DetailedSchool> getSearchData() {
+        List<DetailedSchool> searchData = applicationData.getSearchData();
+        String myString = applicationData.getString();
+        List<Integer> myList = applicationData.getIntegerList();
+        DetailedSchool school = applicationData.getSchool();
+        return searchData;
     }
 
-    /**
-     * This function is designed be set only one time. Its intended use is for the app to make api calls in onCreate, gather the necessary data, and set it here.
-     * When the data is set, the program can then draw from it whenever necessary to receive a clean set of NYC school data.
-     */
-    public List<DetailedSchool> getSearchData() {
-        return searchData;
+    public void setSearchData(List<DetailedSchool> list){
+        applicationData.setSearchData(list);
+        applicationData.setString("Hello Tyler");
+        List<Integer> listInt = new ArrayList<>();
+        listInt.add(1);
+        listInt.add(2);
+        applicationData.setIntegerList(listInt);
+        applicationData.setSchool(list.get(1));
     }
 
     public LiveData<List<School>> getSATSchoolList() {
@@ -129,6 +132,8 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
     public LiveData<List<DetailedSchool>> getDisplaySchoolList() {
         return networker.getDisplaySchoolList();
     }
+
+    public LiveData<List<Integer>> getFilterRequirements(){ return filterActivity.getFilterRequirements(); }
 
     private void configureObservables() {
         getDetailedSchoolList().observe(this, new android.arch.lifecycle.Observer<List<DetailedSchool>>() {
@@ -147,6 +152,7 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
                 List<DetailedSchool> detailedList = getDetailedSchoolList().getValue();
                 List<DetailedSchool> finalData = schoolDataUtility.appendSATScores(schools, detailedList);
                 //here we are done making network calls: our data has been finalized, and everything can pull from our searchData now.
+
                 setSearchData(finalData);
                 //calling setDisplaySchoolList updates our main UI by passing new data to the RecyclerView.
                 setUpMainView();
@@ -157,8 +163,20 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         getDisplaySchoolList().observe(this, new android.arch.lifecycle.Observer<List<DetailedSchool>>() {
             @Override
             public void onChanged(@Nullable List<DetailedSchool> detailedSchools) {
-                //setContentView(R.layout.activity_main);
                 mAdapter.setSchoolList(detailedSchools);
+            }
+        });
+    }
+
+    public void setUpFilterObservable(){
+        getFilterRequirements().observe(this, new android.arch.lifecycle.Observer<List<Integer>>() {
+            @Override
+            public void onChanged(@Nullable List<Integer> integers) {
+                List<DetailedSchool> toDisplay;
+                toDisplay = getSearchData();
+                SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
+                toDisplay = schoolDataUtility.applyAllFilters(toDisplay, integers.get(0), integers.get(1), integers.get(2), integers.get(3), integers.get(4), integers.get(5), integers.get(6), integers.get(7), integers.get(8), integers.get(9));
+                networker.setDisplaySchoolList(toDisplay);
             }
         });
     }
@@ -250,6 +268,13 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
         List<DetailedSchool> sortedBySafety = schoolDataUtility.sortListBySafety(getSearchData());
         networker.setDisplaySchoolList(sortedBySafety);
+    }
+
+
+    public void filterMenuButtonClicked(MenuItem m){
+        setUpFilterObservable();
+        Intent intent = new Intent(this, FilterActivity.class);
+        startActivity(intent);
     }
 
     public void setUsersLocation() {
@@ -371,8 +396,14 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         String attendance = getDisplaySchoolList().getValue().get(position).getAttendanceRate();
         String totalSAT = getDisplaySchoolList().getValue().get(position).getTotalSATScore();
         String englishSAT = getDisplaySchoolList().getValue().get(position).getEnglishSATScore();
+        String writingSAT = getDisplaySchoolList().getValue().get(position).getWritingSATScore();
         String mathSAT = getDisplaySchoolList().getValue().get(position).getMathSATScore();
         String location = getDisplaySchoolList().getValue().get(position).getLocation();
+        String phoneNumber = getDisplaySchoolList().getValue().get(position).getPhoneNumber();
+        String website = getDisplaySchoolList().getValue().get(position).getWebsite();
+        String apClasses = getDisplaySchoolList().getValue().get(position).getAdvancedplacementCourses();
+        String variety = getDisplaySchoolList().getValue().get(position).getPctStuEnoughVariety();
+        String sports = getDisplaySchoolList().getValue().get(position).getSchool_sports();
 
         Intent intent = new Intent(this, SchoolDetailActivity.class);
         intent.putExtra("position", position);
@@ -390,7 +421,13 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         intent.putExtra("totalSAT", totalSAT);
         intent.putExtra("englishSAT", englishSAT);
         intent.putExtra("mathSAT", mathSAT);
+        intent.putExtra("writingSAT", writingSAT);
         intent.putExtra("location", location);
+        intent.putExtra("phoneNumber", phoneNumber);
+        intent.putExtra("website", website);
+        intent.putExtra("apClasses", apClasses);
+        intent.putExtra("variety", variety);
+        intent.putExtra("sports", sports);
         startActivity(intent);
     }
 }

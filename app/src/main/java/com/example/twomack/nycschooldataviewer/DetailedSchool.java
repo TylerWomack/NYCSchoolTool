@@ -21,7 +21,7 @@ public class DetailedSchool {
     private String addtlInfo1;
     private String admissionspriority11;
     private String admissionspriority12;
-    private String advancedplacementCourses;
+    private String advancedplacement_courses;
     private String attendance_rate;
     private String bbl;
     private String bin;
@@ -110,12 +110,21 @@ public class DetailedSchool {
 
 
     public String getSchool_sports() {
-        return school_sports;
+
+        String allSports = "";
+
+        if (getPsalSportsGirls() != null)
+            allSports = allSports + "Girls: " + getPsalSportsGirls();
+
+        if (getPsalSportsBoys() != null)
+            allSports = allSports + " Boys: " + getPsalSportsBoys();
+
+        if (school_sports != null)
+            allSports = allSports + " All: " + school_sports;
+
+        return allSports;
     }
 
-    public void setSchool_sports(String school_sports) {
-        this.school_sports = school_sports;
-    }
 
 
     public String getRequirement5_1() {
@@ -233,11 +242,11 @@ public class DetailedSchool {
     }
 
     public String getAdvancedplacementCourses() {
-        return advancedplacementCourses;
+        return advancedplacement_courses;
     }
 
     public void setAdvancedplacementCourses(String advancedplacementCourses) {
-        this.advancedplacementCourses = advancedplacementCourses;
+        this.advancedplacement_courses = advancedplacement_courses;
     }
 
     public String getAttendanceRate() {

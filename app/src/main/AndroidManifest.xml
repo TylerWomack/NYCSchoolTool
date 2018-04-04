@@ -3,7 +3,7 @@
     package="com.example.twomack.nycschooldataviewer">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -22,6 +22,10 @@
         <activity
             android:name=".SchoolDetailActivity"
             android:label="@string/title_activity_school_detail"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".FilterActivity"
+            android:label="@string/title_activity_filter"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

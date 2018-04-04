@@ -44,6 +44,36 @@
 
     </LinearLayout>
 
+        <TextView
+            android:id="@+id/website"
+            android:layout_below="@+id/linearLayout"
+            android:layout_centerHorizontal="true"
+            android:clickable="true"
+            android:autoLink="web"
+            android:textColorLink="@color/hyperlinkBlue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/school_detail_left_padding"/>
+
+            <TextView
+                android:id="@+id/phone_num"
+                android:layout_below="@+id/website"
+                android:layout_centerHorizontal="true"
+                android:clickable="true"
+                android:autoLink="phone"
+                android:textColorLink="@color/hyperlinkBlue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="@dimen/school_detail_left_padding"/>
+
+
+        <TextView
+            android:id="@+id/address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="1000 Pennslyvania Drive"
+            android:paddingHorizontal="@dimen/school_detail_left_padding"/>
+
 
         <TextView
             android:id="@+id/grades_served_text"
@@ -51,7 +81,7 @@
             android:layout_height="wrap_content"
             android:text="Grades served:"
             android:layout_alignParentLeft="true"
-            android:layout_below="@+id/linearLayout"
+            android:layout_below="@+id/phone_num"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             style="@style/paddingForSchoolDetails"
             />
@@ -116,7 +146,70 @@
         style="@style/paddingForSchoolDetails"
         android:text="Percent of students that report feeling safe:" />
 
-    <TextView
+        <TextView
+            android:id="@+id/percentage_var_text"
+            style="@style/paddingForSchoolDetails"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/percentage_safe_text"
+            android:text="Percent of students that report enough variety:" />
+
+        <LinearLayout
+            android:id="@+id/AP_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/paddingForSchoolDetails"
+            android:layout_below="@+id/percentage_var_text"
+            >
+
+            <TextView
+                android:id="@+id/AP_available_text"
+                android:paddingRight="@dimen/school_detail_right_padding"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="AP\nClasses:" />
+
+            <TextView
+                android:id="@+id/ap_classes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                tools:text="test" />
+
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/sports_layout"
+            android:layout_below="@+id/AP_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/paddingForSchoolDetails"
+            >
+
+            <TextView
+                android:id="@+id/sport_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="@dimen/school_detail_right_padding"
+                android:text="Sports: " />
+
+            <TextView
+                android:id="@+id/sports"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                tools:text="test" />
+
+        </LinearLayout>
+
+
+
+
+        <TextView
         android:id="@+id/average_SAT"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -186,11 +279,27 @@
         android:layout_toRightOf="@+id/grades_served_text"
         tools:text="test" />
 
+        <TextView
+            android:id="@+id/variety"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:layout_alignBaseline="@+id/percentage_var_text"
+            android:layout_alignBottom="@+id/percentage_var_text"
+            android:layout_toEndOf="@+id/percentage_var_text"
+            android:layout_toRightOf="@+id/percentage_var_text"
+            tools:text="test" />
+
+
+
+
+
+
     <TextView
         android:id="@+id/description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/percentage_safe_text"
+        android:layout_below="@+id/sports_layout"
         android:layout_centerHorizontal="true"
         android:paddingLeft="16dp"
         android:paddingTop="8dp"

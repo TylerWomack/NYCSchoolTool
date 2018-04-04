@@ -29,4 +29,11 @@
         app:actionViewClass="android.support.v7.widget.SearchView"
         app:showAsAction="collapseActionView|ifRoom"
         android:title="Search for a school:" />
+
+    <item android:id="@+id/filterMenu"
+        android:icon="@android:drawable/ic_menu_crop"
+        app:actionViewClass="android.support.v7.widget.SearchView"
+        app:showAsAction="collapseActionView|ifRoom"
+        android:title="Filter:"
+        android:onClick="filterMenuButtonClicked"/>
 </menu>

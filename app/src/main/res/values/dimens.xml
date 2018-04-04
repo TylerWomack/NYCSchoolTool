@@ -9,5 +9,8 @@
 
     <dimen name="school_detail_left_padding">16dp</dimen>
     <dimen name="school_detail_vertical_and_right_padding">8dp</dimen>
+    <dimen name="school_detail_right_padding">8dp</dimen>
+
+
 
 </resources>

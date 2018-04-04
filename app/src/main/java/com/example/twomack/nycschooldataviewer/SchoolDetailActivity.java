@@ -1,9 +1,13 @@
 package com.example.twomack.nycschooldataviewer;
 
 import android.arch.lifecycle.Observer;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import java.util.List;
 
@@ -45,6 +49,27 @@ public class SchoolDetailActivity extends AppCompatActivity {
     @BindView(R.id.attendance_rate)
     TextView attendanceView;
 
+    @BindView(R.id.phone_num)
+    TextView phoneView;
+
+    @BindView(R.id.website)
+    TextView websiteView;
+
+    @BindView(R.id.variety)
+    TextView varietyView;
+
+    @BindView(R.id.ap_classes)
+    TextView APView;
+
+    @BindView(R.id.sports)
+    TextView sportsView;
+
+    @BindView(R.id.sports_layout)
+    LinearLayout sportsLayout;
+
+    @BindView(R.id.AP_layout)
+    LinearLayout apLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,6 +92,15 @@ public class SchoolDetailActivity extends AppCompatActivity {
             String schoolDescription = getIntent().getStringExtra("description");
             String attendance = getIntent().getStringExtra("attendance");
             String SAT = getIntent().getStringExtra("totalSAT");
+            String mathSAT = getIntent().getStringExtra("mathSAT");
+            String englishSAT = getIntent().getStringExtra("englishSAT");
+            String writingSAT = getIntent().getStringExtra("writingSAT");
+            String phoneNumber = getIntent().getStringExtra("phoneNumber");
+            String website = getIntent().getStringExtra("website");
+            String apClasses = getIntent().getStringExtra("apClasses");
+            String variety = getIntent().getStringExtra("variety");
+            String sports = getIntent().getStringExtra("sports");
+            String location = getIntent().getStringExtra("location");
 
             schoolNameView.setText(name);
             neighborhoodView.setText(neighborhood + ", ");
@@ -78,7 +112,22 @@ public class SchoolDetailActivity extends AppCompatActivity {
             safetyRatingView.setText(safeRate + "%");
             descriptionView.setText(schoolDescription);
             attendanceView.setText(attendance + "%");
-            averageSATView.setText(SAT);
+            averageSATView.setText(SAT + " (" + mathSAT + " M, " + englishSAT + " E)");
+            phoneView.setText(phoneNumber);
+            websiteView.setText(website);
+            varietyView.setText(variety + "%");
+            APView.setText(apClasses);
+            sportsView.setText(sports);
+
+            //here we are collapsing views if they are empty:
+            if (apClasses == null || apClasses.isEmpty())
+                apLayout.setVisibility(View.GONE);
+            if (sports == null || sports.isEmpty())
+                sportsLayout.setVisibility(View.GONE);
+            if (SAT.isEmpty())
+                averageSATView.setVisibility(View.GONE);
+
+
         }
 
         public void setErrorScreen(){
