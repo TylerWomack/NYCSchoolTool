@@ -84,7 +84,7 @@ public class Networker {
                     public void onNext(List<DetailedSchool> returnedSchools) {
                         //dispatches the value to any active observers
                         List<DetailedSchool> sortedList = sortListByName(returnedSchools);
-                        //detailedSchools.setValue(sortedList);
+                        MainApplication.getApplicationDataModule().setDetailedSchools(sortedList);
                     }
 
                     @Override
@@ -117,7 +117,7 @@ public class Networker {
                     @Override
                     public void onNext(List<School> returnedSchools) {
                         //dispatches the value to any active observers
-                        //schools.setValue(returnedSchools);
+                        MainApplication.getApplicationDataModule().setSchools(returnedSchools);
                     }
 
                     @Override

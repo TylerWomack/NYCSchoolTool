@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         //todo: testing viewModel here.
         CompositeDisposableModule compositeDisposableModule = new CompositeDisposableModule();
         viewModel.setCompositeDisposableModule(compositeDisposableModule);
-        filterActivity = new FilterActivity();
+        //filterActivity = new FilterActivity();
         //locationUtil = new LocationUtil();
         //applicationData = new MainApplication();
         configureObservables();
