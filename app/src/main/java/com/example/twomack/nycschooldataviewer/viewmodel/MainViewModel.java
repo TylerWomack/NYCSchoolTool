@@ -8,8 +8,6 @@ import com.example.twomack.nycschooldataviewer.DetailedSchool;
 
 import java.util.List;
 
-import io.reactivex.disposables.CompositeDisposable;
-
 /**
  * Created by twomack on 3/28/18.
  */
@@ -18,10 +16,6 @@ public class MainViewModel extends ViewModel {
     private CompositeDisposableModule compositeDisposableModule;
 
     private MutableLiveData<List<DetailedSchool>> searchData;
-
-    public MainViewModel(CompositeDisposableModule compositeDisposable){
-        this.compositeDisposableModule = compositeDisposable;
-    }
 
     @Override
     protected void onCleared() {
@@ -42,5 +36,13 @@ public class MainViewModel extends ViewModel {
 
     public MutableLiveData<List<DetailedSchool>> getSearchData(){
         return searchData;
+    }
+
+    public void setCompositeDisposableModule(CompositeDisposableModule compositeDisposableModule) {
+        this.compositeDisposableModule = compositeDisposableModule;
+    }
+
+    public CompositeDisposableModule getCompositeDisposableModule() {
+        return compositeDisposableModule;
     }
 }

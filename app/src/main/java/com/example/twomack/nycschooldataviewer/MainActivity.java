@@ -1,7 +1,7 @@
 package com.example.twomack.nycschooldataviewer;
 
 import android.Manifest;
-import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
     //private LocationUtil locationUtil;
     private MainViewModel viewModel;
     public String[] usersLocation;
-    public MainApplication applicationData;
+    //public MainApplication applicationData;
 
 
 
@@ -65,14 +65,16 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.loading_screen);
+        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+
         ButterKnife.bind(this);
         networker = new Networker();
         //todo: testing viewModel here.
         CompositeDisposableModule compositeDisposableModule = new CompositeDisposableModule();
-        viewModel = new MainViewModel(compositeDisposableModule);
+        viewModel.setCompositeDisposableModule(compositeDisposableModule);
         filterActivity = new FilterActivity();
         //locationUtil = new LocationUtil();
-        applicationData = new MainApplication();
+        //applicationData = new MainApplication();
         configureObservables();
         progressBar.setProgress(25);
 
@@ -106,7 +108,6 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
 
         List<DetailedSchool> toReturn = MainApplication.getApplicationDataModule().getSearchData();
         DetailedSchool school = MainApplication.getApplicationDataModule().getSchool();
-        List<Integer> list = MainApplication.getApplicationDataModule().getIntegerList();
 
         return toReturn;
     }
@@ -119,51 +120,49 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         List<Integer> listInt = new ArrayList<>();
         listInt.add(1);
         listInt.add(2);
-        MainApplication.getApplicationDataModule().setIntegerList(listInt);
-
     }
 
-    public LiveData<List<School>> getSATSchoolList() {
-        return networker.getSATSchoolList();
-    }
 
-    public LiveData<List<DetailedSchool>> getDetailedSchoolList() {return networker.getDetailedSchoolList();}
 
-    public LiveData<List<DetailedSchool>> getDisplaySchoolList() {return networker.getDisplaySchoolList();}
-
-    public LiveData<List<Integer>> getFilterRequirements(){ return filterActivity.getFilterRequirements(); }
 
     //public LiveData<String[]> getLocation(){ return locationUtil.getLocation();}
 
     private void configureObservables() {
-        getDetailedSchoolList().observe(this, new android.arch.lifecycle.Observer<List<DetailedSchool>>() {
+        MainApplication.getApplicationDataModule().getDetailSchoolList().observe(this, new android.arch.lifecycle.Observer<List<DetailedSchool>>() {
             @Override
             public void onChanged(@Nullable List<DetailedSchool> schools) {
-                progressBar.setProgress(70);
-                //when you get the detailed data, begins a request for the SAT data.
-                networker.allSchoolsSAT();
+                if(schools != null) {
+                    progressBar.setProgress(70);
+                    //when you get the detailed data, begins a request for the SAT data.
+                    networker.allSchoolsSAT();
+                }
             }
         });
-        getSATSchoolList().observe(this, new android.arch.lifecycle.Observer<List<School>>() {
+
+        MainApplication.getApplicationDataModule().getSimpleSchools().observe(this, new android.arch.lifecycle.Observer<List<School>>() {
             @Override
             public void onChanged(@Nullable List<School> schools) {
-                progressBar.setProgress(80);
-                SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
-                List<DetailedSchool> detailedList = getDetailedSchoolList().getValue();
-                List<DetailedSchool> finalData = schoolDataUtility.appendSATScores(schools, detailedList);
-                //here we are done making network calls: our data has been finalized, and everything can pull from our searchData now.
+                if(schools != null) {
+                    progressBar.setProgress(80);
+                    SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
+                    List<DetailedSchool> detailedList = MainApplication.getApplicationDataModule().getDetailSchoolList().getValue();
+                    List<DetailedSchool> finalData = schoolDataUtility.appendSATScores(schools, detailedList);
+                    //here we are done making network calls: our data has been finalized, and everything can pull from our searchData now.
 
-                setSearchData(finalData);
-                //calling setDisplaySchoolList updates our main UI by passing new data to the RecyclerView.
-                setUpMainView();
-                networker.setDisplaySchoolList(getSearchData());
+                    setSearchData(finalData);
+                    //calling setDisplaySchoolList updates our main UI by passing new data to the RecyclerView.
+                    setUpMainView();
+                    MainApplication.getApplicationDataModule().setDisplaySchools(getSearchData());
+                }
             }
         });
         //this is where we update the RecyclerView. That occurs when this observer is triggered.
-        getDisplaySchoolList().observe(this, new android.arch.lifecycle.Observer<List<DetailedSchool>>() {
+        MainApplication.getApplicationDataModule().getDisplaySchoolList().observe(this, new android.arch.lifecycle.Observer<List<DetailedSchool>>() {
             @Override
             public void onChanged(@Nullable List<DetailedSchool> detailedSchools) {
-                mAdapter.setSchoolList(detailedSchools);
+                if(detailedSchools != null) {
+                    mAdapter.setSchoolList(detailedSchools);
+                }
             }
         });
         //updates the users' location.
@@ -178,14 +177,14 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
     }
 
     public void setUpFilterObservable(){
-        getFilterRequirements().observe(this, new android.arch.lifecycle.Observer<List<Integer>>() {
+        MainApplication.getApplicationDataModule().getFilterRequirements().observe(this, new android.arch.lifecycle.Observer<List<Integer>>() {
             @Override
             public void onChanged(@Nullable List<Integer> integers) {
                 List<DetailedSchool> toDisplay;
                 toDisplay = getSearchData();
                 SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
                 toDisplay = schoolDataUtility.applyAllFilters(toDisplay, integers.get(0), integers.get(1), integers.get(2), integers.get(3), integers.get(4), integers.get(5), integers.get(6), integers.get(7), integers.get(8), integers.get(9));
-                networker.setDisplaySchoolList(toDisplay);
+                MainApplication.getApplicationDataModule().setDisplaySchools(toDisplay);
             }
         });
     }
@@ -247,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
             result = list.stream().filter(item -> item.getSchoolName().toLowerCase().contains(searchChars))
                     .collect(Collectors.toList());
         }
-        networker.setDisplaySchoolList(result);
+        MainApplication.getApplicationDataModule().setDisplaySchools(result);
         //todo: handling if no results found.
     }
 
@@ -261,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
             SchoolDataUtility su = new SchoolDataUtility();
             List<DetailedSchool> schoolsByDistance = su.getSchoolDistances(list, usersLocation[0], usersLocation[1]);
             //this ends up populating this list to the RecycleView.
-            networker.setDisplaySchoolList(schoolsByDistance);
+            MainApplication.getApplicationDataModule().setDisplaySchools((schoolsByDistance));
         } else {
             setUsersLocation();
         }
@@ -270,13 +269,13 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
     public void viewSchoolsBySATScore(MenuItem m) {
         SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
         List<DetailedSchool> sortedBySAT = schoolDataUtility.sortListBySAT(getSearchData());
-        networker.setDisplaySchoolList(sortedBySAT);
+        MainApplication.getApplicationDataModule().setDisplaySchools((sortedBySAT));
     }
 
     public void viewSchoolsBySafety(MenuItem m) {
         SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
         List<DetailedSchool> sortedBySafety = schoolDataUtility.sortListBySafety(getSearchData());
-        networker.setDisplaySchoolList(sortedBySafety);
+        MainApplication.getApplicationDataModule().setDisplaySchools(sortedBySafety);
     }
 
 
@@ -392,7 +391,7 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
     @Override
     public void onSchoolClicked(int position) {
         Intent intent = new Intent(this, SchoolDetailActivity.class);
-        intent.putExtra("school", getDisplaySchoolList().getValue().get(position));
+        intent.putExtra("school", MainApplication.getApplicationDataModule().getDisplaySchoolList().getValue().get(position));
         startActivity(intent);
     }
 
