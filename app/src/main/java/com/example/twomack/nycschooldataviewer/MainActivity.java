@@ -180,11 +180,13 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         MainApplication.getApplicationDataModule().getFilterRequirements().observe(this, new android.arch.lifecycle.Observer<List<Integer>>() {
             @Override
             public void onChanged(@Nullable List<Integer> integers) {
-                List<DetailedSchool> toDisplay;
-                toDisplay = getSearchData();
-                SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
-                toDisplay = schoolDataUtility.applyAllFilters(toDisplay, integers.get(0), integers.get(1), integers.get(2), integers.get(3), integers.get(4), integers.get(5), integers.get(6), integers.get(7), integers.get(8), integers.get(9));
-                MainApplication.getApplicationDataModule().setDisplaySchools(toDisplay);
+                if(integers != null) {
+                    List<DetailedSchool> toDisplay;
+                    toDisplay = getSearchData();
+                    SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
+                    toDisplay = schoolDataUtility.applyAllFilters(toDisplay, integers.get(0), integers.get(1), integers.get(2), integers.get(3), integers.get(4), integers.get(5), integers.get(6), integers.get(7), integers.get(8), integers.get(9));
+                    MainApplication.getApplicationDataModule().setDisplaySchools(toDisplay);
+                }
             }
         });
     }
