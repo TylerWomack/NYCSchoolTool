@@ -3,6 +3,7 @@ package com.example.twomack.nycschooldataviewer;
 import android.app.Activity;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -273,9 +274,6 @@ public class FilterActivity extends AppCompatActivity {
 
     }
 
-
-
-
     public LiveData<List<Integer>> getFilterRequirements() {
 
         if (requirements == null)
@@ -315,10 +313,9 @@ public class FilterActivity extends AppCompatActivity {
 
         requirements.setValue(sliderResults);
 
+
         //ends this activity and closes the view. It is necessary to call this to make your observer (the one listening to the requirements Observable) active in MainActivity.
         finish();
     }
-
-
 
 }

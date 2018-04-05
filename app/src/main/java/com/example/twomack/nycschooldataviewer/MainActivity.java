@@ -48,11 +48,10 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
     private RecyclerView.LayoutManager mLayoutManager;
     private Networker networker;
     private FilterActivity filterActivity;
+    //private LocationUtil locationUtil;
     private MainViewModel viewModel;
-    private Boolean searchDataIsSet;
-    private List<DetailedSchool> searchData;
     public String[] usersLocation;
-    public ApplicationData applicationData;
+    public MainApplication applicationData;
 
 
 
@@ -67,13 +66,13 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         super.onCreate(savedInstanceState);
         setContentView(R.layout.loading_screen);
         ButterKnife.bind(this);
-        searchDataIsSet = false;
         networker = new Networker();
-        //todo: testing
+        //todo: testing viewModel here.
         CompositeDisposableModule compositeDisposableModule = new CompositeDisposableModule();
         viewModel = new MainViewModel(compositeDisposableModule);
         filterActivity = new FilterActivity();
-        applicationData = ApplicationData.getInstance();
+        //locationUtil = new LocationUtil();
+        applicationData = new MainApplication();
         configureObservables();
         progressBar.setProgress(25);
 
@@ -104,36 +103,37 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
 
     //todo: evaluate this.
     public List<DetailedSchool> getSearchData() {
-        List<DetailedSchool> searchData = applicationData.getSearchData();
-        String myString = applicationData.getString();
-        List<Integer> myList = applicationData.getIntegerList();
-        DetailedSchool school = applicationData.getSchool();
-        return searchData;
+
+        List<DetailedSchool> toReturn = MainApplication.getApplicationDataModule().getSearchData();
+        DetailedSchool school = MainApplication.getApplicationDataModule().getSchool();
+        List<Integer> list = MainApplication.getApplicationDataModule().getIntegerList();
+
+        return toReturn;
     }
 
     public void setSearchData(List<DetailedSchool> list){
-        applicationData.setSearchData(list);
-        applicationData.setString("Hello Tyler");
+
+        MainApplication.getApplicationDataModule().setSearchData(list);
+        MainApplication.getApplicationDataModule().setSchool(list.get(1));
+        MainApplication.getApplicationDataModule().setString("The brown cow jumped over the moon");
         List<Integer> listInt = new ArrayList<>();
         listInt.add(1);
         listInt.add(2);
-        applicationData.setIntegerList(listInt);
-        applicationData.setSchool(list.get(1));
+        MainApplication.getApplicationDataModule().setIntegerList(listInt);
+
     }
 
     public LiveData<List<School>> getSATSchoolList() {
         return networker.getSATSchoolList();
     }
 
-    public LiveData<List<DetailedSchool>> getDetailedSchoolList() {
-        return networker.getDetailedSchoolList();
-    }
+    public LiveData<List<DetailedSchool>> getDetailedSchoolList() {return networker.getDetailedSchoolList();}
 
-    public LiveData<List<DetailedSchool>> getDisplaySchoolList() {
-        return networker.getDisplaySchoolList();
-    }
+    public LiveData<List<DetailedSchool>> getDisplaySchoolList() {return networker.getDisplaySchoolList();}
 
     public LiveData<List<Integer>> getFilterRequirements(){ return filterActivity.getFilterRequirements(); }
+
+    //public LiveData<String[]> getLocation(){ return locationUtil.getLocation();}
 
     private void configureObservables() {
         getDetailedSchoolList().observe(this, new android.arch.lifecycle.Observer<List<DetailedSchool>>() {
@@ -166,6 +166,15 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
                 mAdapter.setSchoolList(detailedSchools);
             }
         });
+        //updates the users' location.
+        /*
+        getLocation().observe(this, new android.arch.lifecycle.Observer<String[]>() {
+            @Override
+            public void onChanged(@Nullable String[] strings) {
+                usersLocation = strings;
+            }
+        });
+        */
     }
 
     public void setUpFilterObservable(){
@@ -382,52 +391,9 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
 
     @Override
     public void onSchoolClicked(int position) {
-
-        String dbn = getDisplaySchoolList().getValue().get(position).getDbn();
-        String schoolName = getDisplaySchoolList().getValue().get(position).getSchoolName();
-        String gradesServed = getDisplaySchoolList().getValue().get(position).getGrades2018();
-        String numStudents = getDisplaySchoolList().getValue().get(position).getTotalStudents();
-        String gradRate = getDisplaySchoolList().getValue().get(position).getGraduationRate();
-        String collegeCareerRate = getDisplaySchoolList().getValue().get(position).getCollegeCareerRate();
-        String safeRate = getDisplaySchoolList().getValue().get(position).getPctStuSafe();
-        String borough = getDisplaySchoolList().getValue().get(position).getBorough();
-        String neighborhood = getDisplaySchoolList().getValue().get(position).getNeighborhood();
-        String description = getDisplaySchoolList().getValue().get(position).getOverviewParagraph();
-        String attendance = getDisplaySchoolList().getValue().get(position).getAttendanceRate();
-        String totalSAT = getDisplaySchoolList().getValue().get(position).getTotalSATScore();
-        String englishSAT = getDisplaySchoolList().getValue().get(position).getEnglishSATScore();
-        String writingSAT = getDisplaySchoolList().getValue().get(position).getWritingSATScore();
-        String mathSAT = getDisplaySchoolList().getValue().get(position).getMathSATScore();
-        String location = getDisplaySchoolList().getValue().get(position).getLocation();
-        String phoneNumber = getDisplaySchoolList().getValue().get(position).getPhoneNumber();
-        String website = getDisplaySchoolList().getValue().get(position).getWebsite();
-        String apClasses = getDisplaySchoolList().getValue().get(position).getAdvancedplacementCourses();
-        String variety = getDisplaySchoolList().getValue().get(position).getPctStuEnoughVariety();
-        String sports = getDisplaySchoolList().getValue().get(position).getSchool_sports();
-
         Intent intent = new Intent(this, SchoolDetailActivity.class);
-        intent.putExtra("position", position);
-        intent.putExtra("dbn", dbn);
-        intent.putExtra("schoolName", schoolName);
-        intent.putExtra("gradesServed", gradesServed);
-        intent.putExtra("numStudents", numStudents);
-        intent.putExtra("gradRate", gradRate);
-        intent.putExtra("collegeCareerRate", collegeCareerRate);
-        intent.putExtra("safeRate", safeRate);
-        intent.putExtra("borough", borough);
-        intent.putExtra("neighborhood", neighborhood);
-        intent.putExtra("description", description);
-        intent.putExtra("attendance", attendance);
-        intent.putExtra("totalSAT", totalSAT);
-        intent.putExtra("englishSAT", englishSAT);
-        intent.putExtra("mathSAT", mathSAT);
-        intent.putExtra("writingSAT", writingSAT);
-        intent.putExtra("location", location);
-        intent.putExtra("phoneNumber", phoneNumber);
-        intent.putExtra("website", website);
-        intent.putExtra("apClasses", apClasses);
-        intent.putExtra("variety", variety);
-        intent.putExtra("sports", sports);
+        intent.putExtra("school", getDisplaySchoolList().getValue().get(position));
         startActivity(intent);
     }
+
 }

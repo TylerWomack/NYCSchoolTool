@@ -1,41 +1,31 @@
 package com.example.twomack.nycschooldataviewer;
-
-import android.app.Application;
-
 import java.util.List;
 
 /**
- * Created by twomack on 4/4/18.
+ * Created by swaitkus on 4/4/18.
  */
 
-public class ApplicationData extends Application {
+public class ApplicationDataModule {
     private List<DetailedSchool> searchData;
     private List<Integer> integerList;
     private String myString;
     private DetailedSchool school;
-    private static final ApplicationData ourInstance = new ApplicationData();
     private int timesSet = 0;
 
-    public static ApplicationData getInstance() {
-        return ourInstance;
-    }
-
-    private ApplicationData() {}
-
-    public List<DetailedSchool> getSearchData(){
+    public List<DetailedSchool> getSearchData() {
         return searchData;
     }
 
-    public void setSearchData(List<DetailedSchool> list){
+    public void setSearchData(List<DetailedSchool> list) {
         searchData = list;
         timesSet++;
     }
 
-    public String getString(){
+    public String getString() {
         return myString;
     }
 
-    public void setString(String string){
+    public void setString(String string) {
         myString = string;
     }
 

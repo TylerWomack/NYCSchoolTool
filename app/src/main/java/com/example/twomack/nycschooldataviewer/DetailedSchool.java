@@ -2,6 +2,7 @@ package com.example.twomack.nycschooldataviewer;
 
 import android.util.Log;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,7 +11,7 @@ import java.util.Map;
  * Created by twomack on 3/26/18.
  */
 
-public class DetailedSchool {
+public class DetailedSchool implements Serializable{
 
 
     private String academicopportunities1;
