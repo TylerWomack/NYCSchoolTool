@@ -1,18 +1,12 @@
 package com.example.twomack.nycschooldataviewer;
 
-import android.arch.lifecycle.Observer;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.example.twomack.nycschooldataviewer.data.DetailedSchool;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

@@ -1,13 +1,16 @@
-package com.example.twomack.nycschooldataviewer;
+package com.example.twomack.nycschooldataviewer.utilities;
 
-import android.arch.lifecycle.MutableLiveData;
-import android.os.Build;
-import android.util.Log;
+import com.example.twomack.nycschooldataviewer.data.MainApplication;
+import com.example.twomack.nycschooldataviewer.data.DetailedSchool;
+import com.example.twomack.nycschooldataviewer.data.School;
+import com.example.twomack.nycschooldataviewer.data.District;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -15,17 +18,6 @@ import java.util.stream.Collectors;
  */
 
 public class SchoolDataUtility {
-
-    //todo:change this name
-    public MutableLiveData<List<DetailedSchool>> xxSearchData;
-
-    public void setSearchData(List<DetailedSchool> list){
-        xxSearchData.setValue(list);
-    }
-
-    public List<DetailedSchool> getSearchData(){
-        return xxSearchData.getValue();
-    }
 
     public double findDistance(Double latitudeSchool, Double longitudeSchool, Double yourLatitude, Double yourLongitude) {
 
@@ -97,6 +89,55 @@ public class SchoolDataUtility {
         });
         return list;
     }
+
+    public List<DetailedSchool> sortListByGraduation(List<DetailedSchool> list){
+        Collections.sort(list, (DetailedSchool school, DetailedSchool t1) -> {
+            if (school.getGraduationRateDouble() < t1.getGraduationRateDouble()) {
+                return 1;
+            } else {
+                return -1;
+            }
+        });
+        return list;
+    }
+
+    public List<DetailedSchool> sortListByCollegeRate(List<DetailedSchool> list){
+        Collections.sort(list, (DetailedSchool school, DetailedSchool t1) -> {
+            if (school.getCollegeCareerRateDouble() < t1.getCollegeCareerRateDouble()) {
+                return 1;
+            } else {
+                return -1;
+            }
+        });
+        return list;
+    }
+
+    public List<DetailedSchool> sortListByNumberOfAPs(List<DetailedSchool> list){
+        Collections.sort(list, (DetailedSchool school, DetailedSchool t1) -> {
+            if (findNumberOfAPClasses(school) < findNumberOfAPClasses(t1)) {
+                return 1;
+            } else if (findNumberOfAPClasses(school) > findNumberOfAPClasses(t1)){
+                return -1;
+            }else {
+                return 0;
+            }
+        });
+        return list;
+    }
+
+    public List<DetailedSchool> sortListByNeighborhood(List<DetailedSchool> list){
+        Collections.sort(list, (DetailedSchool school, DetailedSchool t1) -> {
+            if (school.getNeighborhood().compareTo(t1.getNeighborhood()) > 0) {
+                return 1;
+            } else if (school.getNeighborhood().compareTo(t1.getNeighborhood()) < 0){
+                return -1;
+            }else {
+                return 0;
+            }
+        });
+        return list;
+    }
+
 
     public List<DetailedSchool> appendSATScores(List<School> simpleSchools, List<DetailedSchool> detailedSchools){
 
@@ -266,6 +307,17 @@ public class SchoolDataUtility {
 
     }
 
+    public List<DetailedSchool> filterByName(List<DetailedSchool> list, CharSequence charSequence){
+        List<DetailedSchool> returnList = new ArrayList<>(list);
+        for (DetailedSchool school : list ){
+            if (!school.getSchoolName().toLowerCase().contains(charSequence)){
+                returnList.remove(school);
+            }
+        }
+
+        return returnList;
+    }
+
     public List<DetailedSchool> filterByBoroughAllowed(List<DetailedSchool> list, int m, int brk, int brx, int qn, int st){
 
 
@@ -317,5 +369,135 @@ public class SchoolDataUtility {
         toReturn = filterByCollegeCareerRate(toReturn, collegeRequirement);
         toReturn = filterByBoroughAllowed(toReturn, manhattanAllowed, brooklynAllowed, bronxAllowed, queensAllowed, statenIsAllowed);
         return toReturn;
+    }
+
+    public void buildDistricts(List<DetailedSchool> detailedSchools){
+
+        Set<Integer> districtNumbers = new HashSet<>();
+        //getting a Set of all the districts. Putting it in a set prevents duplicates.
+        for (DetailedSchool school : detailedSchools){
+            districtNumbers.add(school.getSchoolDistrict());
+        }
+
+        ArrayList<Integer> districtNumberList = new ArrayList<>(districtNumbers);
+        ArrayList<District> districts = new ArrayList<>();
+        for (Integer districtNumber : districtNumberList){
+            if(districtNumber != null)
+                districts.add(new District(districtNumber));
+        }
+
+        //here, we now should have an ArrayList of Districts, named districts.
+        for (District district : districts){
+            addSchoolsToDistrict(district, detailedSchools);
+        }
+            addSATToDistricts(districts);
+            addSafetyToDistricts(districts);
+            addGraduationRateToDistricts(districts);
+
+            MainApplication.getApplicationDataModule().setSchoolDistricts(districts);
+    }
+
+    //finds the schools that belong to the district and adds them.
+    public void addSchoolsToDistrict(District district, List<DetailedSchool> schools){
+        ArrayList<DetailedSchool> schoolsToAdd = new ArrayList<>();
+        for (DetailedSchool school : schools){
+
+            if (school.getSchoolDistrict() != null && school.getSchoolDistrict() == district.getDistrictNumber()){
+                schoolsToAdd.add(school);
+                String score = school.getTotalSATScore();
+                Double doubleScore = school.getTotalSATDouble();
+            }
+        }
+        district.setSchoolsInDistrict(schoolsToAdd);
+    }
+
+    public List<District> addSATToDistricts(List<District> districts){
+
+        for (District district : districts){
+            district.getAverageSAT();
+        }
+        /*
+        Collections.sort(districts, (District district, District district2) -> {
+            if (district.getAverageSAT() == null && district2.getAverageSAT() != null){
+                return -1;
+            }else if (district.getAverageSAT() != null && district2.getAverageSAT() == null){
+                return 1;
+            }else if(district.getAverageSAT() == null && district2.getAverageSAT() == null){
+                return 0;
+            }
+
+            if (district.getAverageSAT() > district2.getAverageSAT()){
+                return 1;
+            }else if(district2.getAverageSAT() > district.getAverageSAT()){
+                return -1;
+            }else return 0;
+                }
+        );
+        int position = districts.size();
+        for (District district : districts){
+            district.setSATRank(position);
+            position--;
+        }
+        */
+        return districts;
+    }
+
+    public List<District> addSafetyToDistricts(List<District> districts){
+        for (District district : districts){
+            district.getPercentageOfStudentsSafe();
+        }
+        /*
+        Collections.sort(districts, (District district, District district2) -> {
+                    if (district.getPercentageOfStudentsSafe() == null && district2.getPercentageOfStudentsSafe() != null){
+                        return -1;
+                    }else if (district.getPercentageOfStudentsSafe() != null && district2.getPercentageOfStudentsSafe() == null){
+                        return 1;
+                    }else if(district.getPercentageOfStudentsSafe() == null && district2.getPercentageOfStudentsSafe() == null){
+                        return 0;
+                    }
+
+                    if (district.getPercentageOfStudentsSafe() > district2.getPercentageOfStudentsSafe()){
+                        return 1;
+                    }else if(district2.getPercentageOfStudentsSafe() > district.getPercentageOfStudentsSafe()){
+                        return -1;
+                    }else return 0;
+                }
+        );
+        int position = districts.size();
+        for (District district : districts){
+            district.setSafetyRank(position);
+            position--;
+        }*/
+        return districts;
+    }
+
+    public List<District> addGraduationRateToDistricts(List<District> districts){
+        for (District district : districts){
+            district.getAverageGraduationRate();
+        }
+        /*
+        Collections.sort(districts, (District district, District district2) -> {
+                    if (district.getAverageGraduationRate() == null && district2.getAverageGraduationRate() != null){
+                        return -1;
+                    }else if (district.getAverageGraduationRate() != null && district2.getAverageGraduationRate() == null){
+                        return 1;
+                    }else if(district.getAverageGraduationRate() == null && district2.getAverageGraduationRate() == null){
+                        return 0;
+                    }
+
+                    if (district.getAverageGraduationRate() > district2.getAverageGraduationRate()){
+                        return 1;
+                    }else if(district2.getAverageGraduationRate() > district.getAverageGraduationRate()){
+                        return -1;
+                    }else return 0;
+                }
+        );
+        int position = districts.size();
+        for (District district : districts){
+            district.setGraduationRank(position);
+            position--;
+        }
+        */
+        return districts;
     }
 }

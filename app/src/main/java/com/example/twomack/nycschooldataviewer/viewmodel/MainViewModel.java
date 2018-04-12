@@ -3,8 +3,8 @@ package com.example.twomack.nycschooldataviewer.viewmodel;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
 
-import com.example.twomack.nycschooldataviewer.CompositeDisposableModule;
-import com.example.twomack.nycschooldataviewer.DetailedSchool;
+import com.example.twomack.nycschooldataviewer.networking.CompositeDisposableModule;
+import com.example.twomack.nycschooldataviewer.data.DetailedSchool;
 
 import java.util.List;
 

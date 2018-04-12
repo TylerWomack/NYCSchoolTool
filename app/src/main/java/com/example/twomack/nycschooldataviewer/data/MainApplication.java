@@ -1,8 +1,8 @@
-package com.example.twomack.nycschooldataviewer;
+package com.example.twomack.nycschooldataviewer.data;
 
 import android.app.Application;
 
-import java.util.List;
+import com.example.twomack.nycschooldataviewer.data.ApplicationDataModule;
 
 /**
  * Created by twomack on 4/4/18.

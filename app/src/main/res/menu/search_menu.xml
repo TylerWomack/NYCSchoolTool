@@ -24,16 +24,44 @@
         android:title="Average SAT Score"
         android:onClick="viewSchoolsBySATScore"/>
 
+    <item android:id="@+id/search_by_graduation_button"
+        android:orderInCategory="400"
+        android:icon="@color/colorAccent"
+        android:title="Graduation Rate"
+        android:onClick="viewSchoolsByGraduationRate"/>
+
+    <item android:id="@+id/search_by_college_button"
+        android:orderInCategory="500"
+        android:icon="@color/colorAccent"
+        android:title="College Career Rate"
+        android:onClick="viewSchoolsByCollegeRate"/>
+
+    <item android:id="@+id/search_by_AP_button"
+        android:orderInCategory="600"
+        android:icon="@color/colorAccent"
+        android:title="Number of AP Classes"
+        android:onClick="viewSchoolsByAPNumber"/>
+
+    <item android:id="@+id/search_by_neighborhood"
+        android:orderInCategory="700"
+        android:icon="@color/colorAccent"
+        android:title="Neighborhood"
+        android:onClick="viewSchoolsByNeighborhood"/>
+
     <item android:id="@+id/search"
         android:icon="@android:drawable/ic_menu_search"
         app:actionViewClass="android.support.v7.widget.SearchView"
-        app:showAsAction="collapseActionView|ifRoom"
+        app:showAsAction="always"
         android:title="Search for a school:" />
 
+    <item android:id="@+id/map_button"
+        app:showAsAction="always"
+        android:title="Show On\nDistrict Map"
+        android:onClick="showOnMap"/>
+
     <item android:id="@+id/filterMenu"
-        android:icon="@android:drawable/ic_menu_crop"
-        app:actionViewClass="android.support.v7.widget.SearchView"
-        app:showAsAction="collapseActionView|ifRoom"
-        android:title="Filter:"
+        app:showAsAction="always"
+        android:title="Filter"
         android:onClick="filterMenuButtonClicked"/>
+
 </menu>

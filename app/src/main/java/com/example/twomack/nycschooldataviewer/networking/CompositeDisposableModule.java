@@ -1,4 +1,4 @@
-package com.example.twomack.nycschooldataviewer;
+package com.example.twomack.nycschooldataviewer.networking;
 
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;

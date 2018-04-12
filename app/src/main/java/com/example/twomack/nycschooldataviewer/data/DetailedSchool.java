@@ -1,4 +1,4 @@
-package com.example.twomack.nycschooldataviewer;
+package com.example.twomack.nycschooldataviewer.data;
 
 import android.util.Log;
 
@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class DetailedSchool implements Serializable{
 
-
+    private Integer schoolDistrict;
     private String academicopportunities1;
     private String academicopportunities2;
     private String academicopportunities3;
@@ -108,6 +108,15 @@ public class DetailedSchool implements Serializable{
     private String writingSATScore;
     private String numberOfTestTakers;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+
+
+    public Integer getSchoolDistrict() {
+        return schoolDistrict;
+    }
+
+    public void setSchoolDistrict(Integer schoolDistrict) {
+        this.schoolDistrict = schoolDistrict;
+    }
 
 
     public String getSchool_sports() {
@@ -661,6 +670,8 @@ public class DetailedSchool implements Serializable{
         }else return "";
     }
 
+
+    //todo: why not just store this as a double in the first place?
     public double getPctStuSafeDouble(){
 
         String safe = getPctStuSafe();
@@ -960,4 +971,23 @@ public class DetailedSchool implements Serializable{
 
     }
 
+    public double getGraduationRateDouble(){
+        String rate = getGraduationRate();
+        if (rate != null && !rate.isEmpty()){
+            return Double.valueOf(rate);
+        }else {
+            Log.e("error", "can't return this graduation rate as a double");
+            return -1;
+        }
+    }
+
+    public double getCollegeCareerRateDouble(){
+        String rate = getCollegeCareerRate();
+        if (rate != null && !rate.isEmpty()){
+            return Double.valueOf(rate);
+        }else {
+            Log.e("error", "can't return this college rate as a double");
+            return -1;
+        }
+    }
 }

@@ -18,7 +18,7 @@
         app:srcCompat="@raw/nycskyline" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/loading_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Loading Schools..."
@@ -43,6 +43,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textView2"
+        app:layout_constraintTop_toBottomOf="@id/loading_text"
         app:layout_constraintVertical_bias="0.25" />
 </android.support.constraint.ConstraintLayout>

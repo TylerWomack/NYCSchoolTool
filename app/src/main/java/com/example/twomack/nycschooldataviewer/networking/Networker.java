@@ -1,4 +1,10 @@
-package com.example.twomack.nycschooldataviewer;
+package com.example.twomack.nycschooldataviewer.networking;
+
+import android.util.Log;
+
+import com.example.twomack.nycschooldataviewer.data.DetailedSchool;
+import com.example.twomack.nycschooldataviewer.data.MainApplication;
+import com.example.twomack.nycschooldataviewer.data.School;
 
 import java.util.Collections;
 import java.util.List;
@@ -88,7 +94,11 @@ public class Networker {
                     }
 
                     @Override
-                    public void onError(Throwable e) {}
+                    public void onError(Throwable e) {
+
+                        Log.e("error", "Network failed to return detailed schools");
+
+                    }
 
                     @Override
                     public void onComplete() {}
@@ -121,7 +131,9 @@ public class Networker {
                     }
 
                     @Override
-                    public void onError(Throwable e) {}
+                    public void onError(Throwable e) {
+                        Log.e("error", "Network failed to return simple schools");
+                    }
 
                     @Override
                     public void onComplete() {}

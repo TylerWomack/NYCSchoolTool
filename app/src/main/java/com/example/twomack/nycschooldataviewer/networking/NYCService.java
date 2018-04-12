@@ -1,4 +1,7 @@
-package com.example.twomack.nycschooldataviewer;
+package com.example.twomack.nycschooldataviewer.networking;
+
+import com.example.twomack.nycschooldataviewer.data.DetailedSchool;
+import com.example.twomack.nycschooldataviewer.data.School;
 
 import java.util.List;
 
@@ -11,6 +14,7 @@ import retrofit2.http.Query;
 /**
  * Created by twomack on 3/21/18.
  */
+
 
 public interface NYCService {
 

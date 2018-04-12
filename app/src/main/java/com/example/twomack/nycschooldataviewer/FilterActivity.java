@@ -1,27 +1,21 @@
 package com.example.twomack.nycschooldataviewer;
 
-import android.app.Activity;
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import com.example.twomack.nycschooldataviewer.data.MainApplication;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.reactivex.Observable;
 
 public class FilterActivity extends AppCompatActivity {
 
@@ -70,14 +64,7 @@ public class FilterActivity extends AppCompatActivity {
     @BindView(R.id.staten_island_checkbox)
     CheckedTextView statenIslandCheckbox;
 
-    private static MutableLiveData<List<Integer>> requirements = null;
-
-    public FilterActivity(){
-        if (requirements == null){
-            MutableLiveData<List<Integer>> requirements = new MutableLiveData<List<Integer>>();
-            this.requirements = requirements;
-        }
-    }
+    public FilterActivity(){}
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,9 +72,6 @@ public class FilterActivity extends AppCompatActivity {
         setContentView(R.layout.filter_form);
         ButterKnife.bind(this);
         setUpListeners();
-
-
-
     }
 
     public void setUpListeners(){
@@ -184,8 +168,6 @@ public class FilterActivity extends AppCompatActivity {
         queensCheckbox.setChecked(true);
         statenIslandCheckbox.setChecked(true);
 
-        //todo:fix the wrapping or update the required SDK
-
         manhattanCheckbox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -274,14 +256,6 @@ public class FilterActivity extends AppCompatActivity {
 
     }
 
-    public LiveData<List<Integer>> getFilterRequirements() {
-
-        if (requirements == null)
-            requirements = new MutableLiveData<>();
-
-        return requirements;
-    }
-
     public void filterButtonClicked(View v){
         List<Integer> sliderResults = new ArrayList<>();
         //the order here matters - we'll be plugging these into our filter in SchoolDataUtility in this order.
@@ -311,8 +285,10 @@ public class FilterActivity extends AppCompatActivity {
             sliderResults.add(1);
         }else sliderResults.add(0);
 
-        requirements.setValue(sliderResults);
 
+
+        //MainApplication.getApplicationDataModule().getFilterRequirements().setValue(sliderResults);
+        MainApplication.getApplicationDataModule().setFilterRequirements(sliderResults);
 
         //ends this activity and closes the view. It is necessary to call this to make your observer (the one listening to the requirements Observable) active in MainActivity.
         finish();

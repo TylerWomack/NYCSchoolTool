@@ -1,25 +1,17 @@
 package com.example.twomack.nycschooldataviewer.recyclerview.adapters;
 
-import android.arch.lifecycle.MutableLiveData;
 import android.graphics.Color;
-import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.example.twomack.nycschooldataviewer.DetailedSchool;
+import com.example.twomack.nycschooldataviewer.data.DetailedSchool;
 import com.example.twomack.nycschooldataviewer.R;
-import com.example.twomack.nycschooldataviewer.School;
-
-import org.w3c.dom.Text;
 
 import java.util.List;
-
-import butterknife.BindView;
 
 /**
  * Created by twomack on 3/23/18.

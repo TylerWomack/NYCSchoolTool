@@ -7,9 +7,23 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="windowNoTitle">true</item>
+        <item name="android:actionOverflowButtonStyle">@style/MyActionButtonOverflow</item>
+        <item name="android:actionMenuTextColor">@color/white</item>
+        <item name="android:actionButtonStyle">@style/ActionButton</item>
+
+
     </style>
 
-    <style name="BasicText">
+    <style name="BasicText"></style>
+
+    <!-- Style to replace actionbar overflow icon. set item 'android:actionOverflowButtonStyle' in AppTheme -->
+    <style name="MyActionButtonOverflow" parent="@android:style/Widget.Holo.ActionButton">
+        <item name="android:text">Sort</item>
+        <item name="android:title">Sort</item>
+        <item name="android:label">Sort</item>
+        <item name="android:src">@drawable/sort</item>
+        <item name="android:scaleType">centerInside</item>
+        <item name="android:padding">8dp</item>
 
 
     </style>
@@ -17,6 +31,11 @@
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="ActionButton">
+        <item name="android:paddingRight">8dp</item>
+        <item name="android:paddingLeft">8dp</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

@@ -1,4 +1,4 @@
-package com.example.twomack.nycschooldataviewer;
+package com.example.twomack.nycschooldataviewer.networking;
 
 /**
  * Created by swaitkus on 2/20/18.

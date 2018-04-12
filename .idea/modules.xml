@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/NYCSchoolData.iml" filepath="$PROJECT_DIR$/NYCSchoolData.iml" />
       <module fileurl="file://$PROJECT_DIR$/NYCSchoolDataViewer.iml" filepath="$PROJECT_DIR$/NYCSchoolDataViewer.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>

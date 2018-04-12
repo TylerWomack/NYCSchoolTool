@@ -1,8 +1,13 @@
-package com.example.twomack.nycschooldataviewer;
+package com.example.twomack.nycschooldataviewer.data;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 
+import com.example.twomack.nycschooldataviewer.data.DetailedSchool;
+import com.example.twomack.nycschooldataviewer.data.School;
+import com.example.twomack.nycschooldataviewer.data.District;
+
 import java.util.List;
+
 
 /**
  * Created by swaitkus on 4/4/18.
@@ -10,15 +15,25 @@ import java.util.List;
 
 public class ApplicationDataModule {
     private List<DetailedSchool> searchData;
-    private String myString;
-    private DetailedSchool school;
-    private int timesSet = 0;
     private MutableLiveData<List<School>> schools;
     private MutableLiveData<List<DetailedSchool>> detailedSchools;
     private MutableLiveData<List<DetailedSchool>> displaySchools;
-
     private MutableLiveData<List<Integer>> filterRequirements;
+    private MutableLiveData<List<District>> schoolDistricts;
 
+    public MutableLiveData<List<District>> getSchoolDistricts(){
+        if (schoolDistricts == null){
+            schoolDistricts = new MutableLiveData<>();
+        }
+        return schoolDistricts;
+    }
+
+    public void setSchoolDistricts(List<District> schoolDistricts){
+        if (this.schoolDistricts == null){
+            this.schoolDistricts = new MutableLiveData<>();
+        }
+        this.schoolDistricts.setValue(schoolDistricts);
+    }
 
     public MutableLiveData<List<Integer>> getFilterRequirements() {
         if(filterRequirements == null) {
@@ -27,11 +42,11 @@ public class ApplicationDataModule {
         return filterRequirements;
     }
 
-    public void setFilterRequirements(MutableLiveData<List<Integer>> filterRequirements) {
-        if(this.filterRequirements == null) {
+    public void setFilterRequirements(List<Integer> filterRequirements){
+        if (this.filterRequirements == null){
             this.filterRequirements = new MutableLiveData<>();
         }
-        this.filterRequirements = filterRequirements;
+        this.filterRequirements.setValue(filterRequirements);
     }
 
     public LiveData<List<School>> getSimpleSchools() {
@@ -53,6 +68,10 @@ public class ApplicationDataModule {
             displaySchools = new MutableLiveData<>();
         }
         return displaySchools;
+    }
+
+    public List<DetailedSchool> getCurrentlyDisplayedSchools(){
+            return getDisplaySchoolList().getValue();
     }
 
 
@@ -82,26 +101,15 @@ public class ApplicationDataModule {
     }
 
     public void setSearchData(List<DetailedSchool> list) {
+
         searchData = list;
-        timesSet++;
     }
 
-    public String getString() {
-        return myString;
+    public DetailedSchool getSchoolFromName(String name){
+        for (DetailedSchool school : searchData){
+            if (school.getSchoolName().equals(name))
+                return school;
+        }
+        return null;
     }
-
-    public void setString(String string) {
-        myString = string;
-    }
-
-
-
-    public DetailedSchool getSchool() {
-        return school;
-    }
-
-    public void setSchool(DetailedSchool school) {
-        this.school = school;
-    }
-
 }

@@ -24,21 +24,34 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
+import com.example.twomack.nycschooldataviewer.data.DetailedSchool;
+import com.example.twomack.nycschooldataviewer.data.MainApplication;
+import com.example.twomack.nycschooldataviewer.data.School;
+import com.example.twomack.nycschooldataviewer.networking.CompositeDisposableModule;
+import com.example.twomack.nycschooldataviewer.networking.Networker;
 import com.example.twomack.nycschooldataviewer.recyclerview.adapters.MainRecyclerViewAdapter;
+import com.example.twomack.nycschooldataviewer.utilities.SchoolDataUtility;
 import com.example.twomack.nycschooldataviewer.viewmodel.MainViewModel;
 import com.jakewharton.rxbinding2.support.v7.widget.RxSearchView;
 import com.jakewharton.rxbinding2.support.v7.widget.SearchViewQueryTextEvent;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+
+import static com.example.twomack.nycschooldataviewer.data.MainApplication.getApplicationDataModule;
 
 public class MainActivity extends AppCompatActivity implements MainRecyclerViewAdapter.OnSchoolSelectedListener {
 
@@ -47,19 +60,17 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
     private MainRecyclerViewAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private Networker networker;
-    private FilterActivity filterActivity;
-    //private LocationUtil locationUtil;
     private MainViewModel viewModel;
     public String[] usersLocation;
-    //public MainApplication applicationData;
-
-
 
     @Nullable @BindView(R.id.toolbar)
     Toolbar toolbar;
 
     @Nullable @BindView(R.id.progressBar)
     ProgressBar progressBar;
+
+    @Nullable @BindView(R.id.loading_text)
+    TextView loadingText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,12 +80,8 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
 
         ButterKnife.bind(this);
         networker = new Networker();
-        //todo: testing viewModel here.
         CompositeDisposableModule compositeDisposableModule = new CompositeDisposableModule();
         viewModel.setCompositeDisposableModule(compositeDisposableModule);
-        //filterActivity = new FilterActivity();
-        //locationUtil = new LocationUtil();
-        //applicationData = new MainApplication();
         configureObservables();
         progressBar.setProgress(25);
 
@@ -99,65 +106,53 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         mAdapter = new MainRecyclerViewAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
 
+        toolbar.setTitle("");
         setSupportActionBar(toolbar);
-
-    }
-
-    //todo: evaluate this.
-    public List<DetailedSchool> getSearchData() {
-
-        List<DetailedSchool> toReturn = MainApplication.getApplicationDataModule().getSearchData();
-        DetailedSchool school = MainApplication.getApplicationDataModule().getSchool();
-
-        return toReturn;
-    }
-
-    public void setSearchData(List<DetailedSchool> list){
-
-        MainApplication.getApplicationDataModule().setSearchData(list);
-        MainApplication.getApplicationDataModule().setSchool(list.get(1));
-        MainApplication.getApplicationDataModule().setString("The brown cow jumped over the moon");
-        List<Integer> listInt = new ArrayList<>();
-        listInt.add(1);
-        listInt.add(2);
     }
 
 
+    public List<DetailedSchool> getSearchData() { return getApplicationDataModule().getSearchData(); }
 
+    public void setSearchData(List<DetailedSchool> list){ getApplicationDataModule().setSearchData(list);}
 
-    //public LiveData<String[]> getLocation(){ return locationUtil.getLocation();}
+    public List<DetailedSchool> getCurrentlyDisplayedSchools(){ return getApplicationDataModule().getCurrentlyDisplayedSchools(); }
 
     private void configureObservables() {
-        MainApplication.getApplicationDataModule().getDetailSchoolList().observe(this, new android.arch.lifecycle.Observer<List<DetailedSchool>>() {
+        getApplicationDataModule().getDetailSchoolList().observe(this, new android.arch.lifecycle.Observer<List<DetailedSchool>>() {
             @Override
             public void onChanged(@Nullable List<DetailedSchool> schools) {
                 if(schools != null) {
-                    progressBar.setProgress(70);
+                    if (progressBar != null){
+                        progressBar.setProgress(70);
+                    }
                     //when you get the detailed data, begins a request for the SAT data.
                     networker.allSchoolsSAT();
                 }
             }
         });
 
-        MainApplication.getApplicationDataModule().getSimpleSchools().observe(this, new android.arch.lifecycle.Observer<List<School>>() {
+        getApplicationDataModule().getSimpleSchools().observe(this, new android.arch.lifecycle.Observer<List<School>>() {
             @Override
             public void onChanged(@Nullable List<School> schools) {
                 if(schools != null) {
-                    progressBar.setProgress(80);
+                    if (progressBar != null){
+                        progressBar.setProgress(80);
+                    }
+
                     SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
-                    List<DetailedSchool> detailedList = MainApplication.getApplicationDataModule().getDetailSchoolList().getValue();
+                    List<DetailedSchool> detailedList = getApplicationDataModule().getDetailSchoolList().getValue();
                     List<DetailedSchool> finalData = schoolDataUtility.appendSATScores(schools, detailedList);
                     //here we are done making network calls: our data has been finalized, and everything can pull from our searchData now.
 
                     setSearchData(finalData);
                     //calling setDisplaySchoolList updates our main UI by passing new data to the RecyclerView.
                     setUpMainView();
-                    MainApplication.getApplicationDataModule().setDisplaySchools(getSearchData());
+                    getApplicationDataModule().setDisplaySchools(getSearchData());
                 }
             }
         });
         //this is where we update the RecyclerView. That occurs when this observer is triggered.
-        MainApplication.getApplicationDataModule().getDisplaySchoolList().observe(this, new android.arch.lifecycle.Observer<List<DetailedSchool>>() {
+        getApplicationDataModule().getDisplaySchoolList().observe(this, new android.arch.lifecycle.Observer<List<DetailedSchool>>() {
             @Override
             public void onChanged(@Nullable List<DetailedSchool> detailedSchools) {
                 if(detailedSchools != null) {
@@ -165,27 +160,21 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
                 }
             }
         });
-        //updates the users' location.
-        /*
-        getLocation().observe(this, new android.arch.lifecycle.Observer<String[]>() {
-            @Override
-            public void onChanged(@Nullable String[] strings) {
-                usersLocation = strings;
-            }
-        });
-        */
     }
 
     public void setUpFilterObservable(){
-        MainApplication.getApplicationDataModule().getFilterRequirements().observe(this, new android.arch.lifecycle.Observer<List<Integer>>() {
+        getApplicationDataModule().getFilterRequirements().observe(this, new android.arch.lifecycle.Observer<List<Integer>>() {
             @Override
             public void onChanged(@Nullable List<Integer> integers) {
                 if(integers != null) {
                     List<DetailedSchool> toDisplay;
-                    toDisplay = getSearchData();
+                    toDisplay = new ArrayList<>(getSearchData());
                     SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
                     toDisplay = schoolDataUtility.applyAllFilters(toDisplay, integers.get(0), integers.get(1), integers.get(2), integers.get(3), integers.get(4), integers.get(5), integers.get(6), integers.get(7), integers.get(8), integers.get(9));
-                    MainApplication.getApplicationDataModule().setDisplaySchools(toDisplay);
+                    getApplicationDataModule().setDisplaySchools(toDisplay);
+                    if (toDisplay.size() == 0){
+                        launchErrorScreen();
+                    }
                 }
             }
         });
@@ -233,7 +222,6 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         return super.onPrepareOptionsMenu(menu);
     }
 
-    //todo: this currently filters the list, removing all schools without the searched name. I'd prefer it to sort it instead? Also, this shouldn't be case sensitive.
     public void searchForSchoolName(CharSequence charSequence) {
 
         //this is done to eliminate case-sensitivity
@@ -243,13 +231,13 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
 
         List<DetailedSchool> list = getSearchData();
         List<DetailedSchool> result = null;
-        //todo: fix this. Either write it in a different way so you don't use the wrapper or add exception handling.
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-            result = list.stream().filter(item -> item.getSchoolName().toLowerCase().contains(searchChars))
-                    .collect(Collectors.toList());
+            SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
+            result = schoolDataUtility.filterByName(list, searchChars);
+        //}
+        getApplicationDataModule().setDisplaySchools(result);
+        if (result.size() == 0){
+            launchErrorScreen();
         }
-        MainApplication.getApplicationDataModule().setDisplaySchools(result);
-        //todo: handling if no results found.
     }
 
     public void viewSchoolsByDistance(MenuItem m) {
@@ -258,11 +246,14 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
             //changing this list parameter would change the result of the returned values. In other words, you could run more complex searches by
             //limiting this list first to say, Manhattan, or schools with average SAT scores > 1200, then sorting by distance. Currently, by calling
             //getSearchData, you're retrieving a fresh dataset, which precludes more advanced filtering. You could overload the method, have it accept List as well?
-            List<DetailedSchool> list = getSearchData();
+            List<DetailedSchool> list = new ArrayList<>(getSearchData());
+
             SchoolDataUtility su = new SchoolDataUtility();
-            List<DetailedSchool> schoolsByDistance = su.getSchoolDistances(list, usersLocation[0], usersLocation[1]);
+            List<DetailedSchool> allSchoolsByDistance = su.getSchoolDistances(list, usersLocation[0], usersLocation[1]);
+            List<DetailedSchool> schoolsByDistance = su.getSchoolDistances(getCurrentlyDisplayedSchools(), usersLocation[0], usersLocation[1]);
+
             //this ends up populating this list to the RecycleView.
-            MainApplication.getApplicationDataModule().setDisplaySchools((schoolsByDistance));
+            getApplicationDataModule().setDisplaySchools((schoolsByDistance));
         } else {
             setUsersLocation();
         }
@@ -270,14 +261,38 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
 
     public void viewSchoolsBySATScore(MenuItem m) {
         SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
-        List<DetailedSchool> sortedBySAT = schoolDataUtility.sortListBySAT(getSearchData());
-        MainApplication.getApplicationDataModule().setDisplaySchools((sortedBySAT));
+        List<DetailedSchool> sortedBySAT = schoolDataUtility.sortListBySAT(getCurrentlyDisplayedSchools());
+        getApplicationDataModule().setDisplaySchools((sortedBySAT));
     }
 
     public void viewSchoolsBySafety(MenuItem m) {
         SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
-        List<DetailedSchool> sortedBySafety = schoolDataUtility.sortListBySafety(getSearchData());
-        MainApplication.getApplicationDataModule().setDisplaySchools(sortedBySafety);
+        List<DetailedSchool> sortedBySafety = schoolDataUtility.sortListBySafety(getCurrentlyDisplayedSchools());
+        getApplicationDataModule().setDisplaySchools(sortedBySafety);
+    }
+
+    public void viewSchoolsByGraduationRate(MenuItem m){
+        SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
+        List<DetailedSchool> sortedByGraduation = schoolDataUtility.sortListByGraduation(getCurrentlyDisplayedSchools());
+        getApplicationDataModule().setDisplaySchools(sortedByGraduation);
+    }
+
+    public void viewSchoolsByCollegeRate(MenuItem m){
+        SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
+        List<DetailedSchool> sortedByCollege = schoolDataUtility.sortListByCollegeRate(getCurrentlyDisplayedSchools());
+        getApplicationDataModule().setDisplaySchools(sortedByCollege);
+    }
+
+    public void viewSchoolsByAPNumber(MenuItem m){
+        SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
+        List<DetailedSchool> sortedByAP = schoolDataUtility.sortListByNumberOfAPs(getCurrentlyDisplayedSchools());
+        getApplicationDataModule().setDisplaySchools(sortedByAP);
+    }
+
+    public void viewSchoolsByNeighborhood(MenuItem m){
+        SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
+        List<DetailedSchool> sortListByNeighborhood = schoolDataUtility.sortListByNeighborhood(getCurrentlyDisplayedSchools());
+        getApplicationDataModule().setDisplaySchools(sortListByNeighborhood);
     }
 
 
@@ -393,8 +408,17 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
     @Override
     public void onSchoolClicked(int position) {
         Intent intent = new Intent(this, SchoolDetailActivity.class);
-        intent.putExtra("school", MainApplication.getApplicationDataModule().getDisplaySchoolList().getValue().get(position));
+        intent.putExtra("school", getApplicationDataModule().getDisplaySchoolList().getValue().get(position));
         startActivity(intent);
     }
 
+    public void launchErrorScreen(){
+        Intent intent = new Intent(this, ErrorActivity.class);
+        startActivity(intent);
+    }
+
+    public void showOnMap(MenuItem m){
+        Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
+    }
 }

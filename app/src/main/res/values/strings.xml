@@ -1,8 +1,14 @@
 <resources>
-    <string name="app_name">NYCPublicSchoolFinder</string>
+    <string name="app_name">NYC High School Finder</string>
     <string name="title_activity_school_detail">SchoolDetailActivity</string>
     <string name="open_loc_settings">Open Location Settings</string>
     <string name="gps_network_not_enabled">Sorry, we can\'t find schools near you because GPS is not enabled on your phone </string>
     <string name="Cancel">Cancel</string>
     <string name="title_activity_filter">FilterActivity</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_error">ErrorActivity</string>
+    <string name="title_activity_maps"></string>
+
 </resources>

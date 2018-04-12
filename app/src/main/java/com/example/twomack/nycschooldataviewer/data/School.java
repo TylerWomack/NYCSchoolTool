@@ -1,4 +1,4 @@
-package com.example.twomack.nycschooldataviewer;
+package com.example.twomack.nycschooldataviewer.data;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -45,7 +45,9 @@ public class School {
     }
 
     public String getSatCriticalReadingAvgScore() {
-        if (satCriticalReadingAvgScore.equals("s"))
+        if (satCriticalReadingAvgScore == null)
+            return  "n/a";
+        if (satCriticalReadingAvgScore.equals("s") || satCriticalReadingAvgScore.equals(""))
             return "n/a";
         return satCriticalReadingAvgScore;
     }
@@ -55,7 +57,9 @@ public class School {
     }
 
     public String getSatMathAvgScore() {
-        if (satMathAvgScore.equals("s"))
+        if (satMathAvgScore == null)
+            return "n/a";
+        if (satMathAvgScore.equals("s") || satMathAvgScore.equals(""))
             return "n/a";
         return satMathAvgScore;
     }
@@ -64,9 +68,8 @@ public class School {
         this.satMathAvgScore = satMathAvgScore;
     }
 
-    //todo:fix this if either of the values are null
     public String getTotalScore(){
-        if (satMathAvgScore.equals("s") || satCriticalReadingAvgScore.equals("s")){
+        if (satMathAvgScore.equals("s") || satCriticalReadingAvgScore.equals("s") || satMathAvgScore == null || satCriticalReadingAvgScore == null){
             return "n/a";
         }
         int mathScore = Integer.valueOf(satMathAvgScore);
@@ -77,6 +80,9 @@ public class School {
 
     public String getSatWritingAvgScore()
     {
+        if (satWritingAvgScore == null)
+            return "n/a";
+
         if (satWritingAvgScore.equals("s"))
             return "n/a";
         return satWritingAvgScore;
