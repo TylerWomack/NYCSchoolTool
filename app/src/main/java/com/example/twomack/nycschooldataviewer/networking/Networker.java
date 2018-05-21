@@ -32,37 +32,10 @@ public class Networker {
         }
         return INSTANCE;
     }
-    //on Schools vs detailedSchools vs displaySchools: schools are simple objects created from an API call that gives us the school name, SAT score, the # of test takers and a dbn.
-    //DetailedSchools provide much, much more information - the API call they are generated from provides nearly 100 data points. I create both school and detailedSchool lists,
-    //identify when their dbns are the same, and add the SAT data to the detailedSchool list, which then contains all the external data we need for the rest of the app's lifecycle.
-    //displaySchools are the schools that I want to display in the RecyclerView, updating displaySchools triggers an observer that updates that View.
-    //note that once the app has made its initial network requests and collected the data, schools and detailedSchools are no longer used.
-
-    //todo: Get a better understanding of disposables...
-
-    /*private MutableLiveData<List<School>> schools;
-    private MutableLiveData<List<DetailedSchool>> detailedSchools;
-    private MutableLiveData<List<DetailedSchool>> displaySchools;*/
 
     public Networker(){
-        /*MutableLiveData<List<School>> schools = new MutableLiveData<>();
-        this.schools = schools;
 
-        MutableLiveData<List<DetailedSchool>> detailedSchool = new MutableLiveData<>();
-        this.detailedSchools = detailedSchool;
-
-        MutableLiveData<List<DetailedSchool>> displaySchools = new MutableLiveData<>();
-        this.displaySchools = displaySchools;*/
     }
-
-    /*public LiveData<List<School>> getSATSchoolList() {
-        return schools;
-    }
-    public LiveData<List<DetailedSchool>> getSimpleSchools(){ return detailedSchools;}
-    public LiveData<List<DetailedSchool>> getDisplaySchoolList(){ return  displaySchools;}*/
-
-    /*public void setDisplaySchoolList(List<DetailedSchool> list){ displaySchools.setValue(list);
-    }*/
 
     private Retrofit buildRetrofit(){
         if(retrofitInstance != null) {

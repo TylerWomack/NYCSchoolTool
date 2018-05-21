@@ -110,7 +110,6 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         setSupportActionBar(toolbar);
     }
 
-
     public List<DetailedSchool> getSearchData() { return getApplicationDataModule().getSearchData(); }
 
     public void setSearchData(List<DetailedSchool> list){ getApplicationDataModule().setSearchData(list);}

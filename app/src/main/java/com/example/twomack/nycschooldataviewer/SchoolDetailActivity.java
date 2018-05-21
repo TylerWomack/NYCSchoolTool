@@ -124,8 +124,6 @@ public class SchoolDetailActivity extends AppCompatActivity {
                 sportsLayout.setVisibility(View.GONE);
             if (SAT.isEmpty())
                 averageSATView.setVisibility(View.GONE);
-
-
         }
 
         public void setErrorScreen(){

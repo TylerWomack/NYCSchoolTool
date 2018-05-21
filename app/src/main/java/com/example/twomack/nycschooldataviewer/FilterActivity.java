@@ -285,13 +285,10 @@ public class FilterActivity extends AppCompatActivity {
             sliderResults.add(1);
         }else sliderResults.add(0);
 
-
-
         //MainApplication.getApplicationDataModule().getFilterRequirements().setValue(sliderResults);
         MainApplication.getApplicationDataModule().setFilterRequirements(sliderResults);
 
         //ends this activity and closes the view. It is necessary to call this to make your observer (the one listening to the requirements Observable) active in MainActivity.
         finish();
     }
-
 }

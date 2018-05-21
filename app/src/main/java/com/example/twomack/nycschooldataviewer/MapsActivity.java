@@ -342,6 +342,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+
     public Boolean findIfSchoolIsInPolygon(DetailedSchool school, SchoolDistrictUtility schoolDistrictUtility){
 
         String lat = school.getLatitude();
@@ -430,5 +431,4 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             MainApplication.getApplicationDataModule().setSearchData(schools);
         }
     }
-
 }
