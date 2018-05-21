@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent">
+
+
+    <item android:id="@+id/Safety_Map_Color"
+        android:orderInCategory="100"
+        app:showAsAction="always"
+        android:title="Perceived\nSafety"
+        android:onClick="safetyButtonClicked"
+        />
+
+    <item android:id="@+id/SAT_Map_Color"
+        android:orderInCategory="200"
+        app:showAsAction="always"
+        android:title="SAT\nScores"
+        android:onClick="SATButtonClicked"
+       />
+
+    <item android:id="@+id/Graduation_Map_Color"
+        android:orderInCategory="300"
+        app:showAsAction="always"
+        android:title="Graduation\nRate"
+        android:onClick="graduationButtonClicked"
+        />
+
+    <item android:id="@+id/Toggle_Icons"
+        android:orderInCategory="400"
+        app:showAsAction="always"
+        android:title="Toggle\nIcons"
+        android:onClick="toggleIcons"
+        />
+
+</menu>
