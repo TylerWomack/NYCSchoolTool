@@ -1,5 +1,6 @@
 package com.example.twomack.nycschooldataviewer;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -13,6 +14,7 @@ import butterknife.ButterKnife;
 
 public class SchoolDetailActivity extends AppCompatActivity {
 
+    //region Butterknife BindViews
     @BindView(R.id.school_name)
     TextView schoolNameView;
 
@@ -66,6 +68,7 @@ public class SchoolDetailActivity extends AppCompatActivity {
 
     @BindView(R.id.AP_layout)
     LinearLayout apLayout;
+    //endregion
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,9 +76,8 @@ public class SchoolDetailActivity extends AppCompatActivity {
         setContent();
     }
 
+    @SuppressLint("SetTextI18n")
     public void setContent(){
-
-
         setContentView(R.layout.school_detail);
             ButterKnife.bind(this);
             DetailedSchool school = (DetailedSchool) getIntent().getSerializableExtra("school");
@@ -92,13 +94,11 @@ public class SchoolDetailActivity extends AppCompatActivity {
             String SAT = school.getTotalSATScore();
             String mathSAT = school.getMathSATScore();
             String englishSAT = school.getEnglishSATScore();
-            String writingSAT = school.getWritingSATScore();
             String phoneNumber = school.getPhoneNumber();
             String website = school.getWebsite();
             String apClasses = school.getAdvancedplacementCourses();
             String variety = school.getPctStuEnoughVariety();
             String sports = school.getSchool_sports();
-            String location = school.getLocation();
 
             schoolNameView.setText(name);
             neighborhoodView.setText(neighborhood + ", ");
@@ -125,8 +125,4 @@ public class SchoolDetailActivity extends AppCompatActivity {
             if (SAT.isEmpty())
                 averageSATView.setVisibility(View.GONE);
         }
-
-        public void setErrorScreen(){
-            setContentView(R.layout.error_screen);
-    }
 }

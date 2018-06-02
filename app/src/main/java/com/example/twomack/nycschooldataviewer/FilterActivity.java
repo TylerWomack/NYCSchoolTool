@@ -1,5 +1,6 @@
 package com.example.twomack.nycschooldataviewer;
 
+import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import butterknife.ButterKnife;
 
 public class FilterActivity extends AppCompatActivity {
 
+    //region Butterknife BindViews
     @BindView(R.id.SAT_seek)
     SeekBar SAT;
 
@@ -63,6 +65,7 @@ public class FilterActivity extends AppCompatActivity {
 
     @BindView(R.id.staten_island_checkbox)
     CheckedTextView statenIslandCheckbox;
+    //endregion
 
     public FilterActivity(){}
 
@@ -94,6 +97,7 @@ public class FilterActivity extends AppCompatActivity {
         });
 
         safety.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @SuppressLint("SetTextI18n")
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
                 safetyPosition.setText(String.valueOf(i) + "%");
@@ -112,6 +116,7 @@ public class FilterActivity extends AppCompatActivity {
 
 
         graduation.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @SuppressLint("SetTextI18n")
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
                 graduationPosition.setText(String.valueOf(i) + "%");
@@ -146,6 +151,7 @@ public class FilterActivity extends AppCompatActivity {
         });
 
         college.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @SuppressLint("SetTextI18n")
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
                 collegePosition.setText(String.valueOf(i) + "%");
@@ -252,8 +258,6 @@ public class FilterActivity extends AppCompatActivity {
                 }
             }
         });
-
-
     }
 
     public void filterButtonClicked(View v){
@@ -285,10 +289,10 @@ public class FilterActivity extends AppCompatActivity {
             sliderResults.add(1);
         }else sliderResults.add(0);
 
-        //MainApplication.getApplicationDataModule().getFilterRequirements().setValue(sliderResults);
         MainApplication.getApplicationDataModule().setFilterRequirements(sliderResults);
 
-        //ends this activity and closes the view. It is necessary to call this to make your observer (the one listening to the requirements Observable) active in MainActivity.
         finish();
+
+        //onActivityResult would have worked here as well.
     }
 }

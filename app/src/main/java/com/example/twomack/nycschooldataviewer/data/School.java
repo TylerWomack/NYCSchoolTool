@@ -7,8 +7,11 @@ import com.google.gson.annotations.SerializedName;
  * Created by twomack on 3/21/18.
  */
 
+
+
 public class School {
 
+    //Using @SerializedName and @Expose because the api returns results with underscores, which retrofit could not recognize otherwise.
     @SerializedName("dbn")
     @Expose
     private String dbn;
@@ -28,7 +31,7 @@ public class School {
     @Expose
     private String schoolName;
 
-    public String getDbn() {
+    public String getId() {
         return dbn;
     }
 

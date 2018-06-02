@@ -9,31 +9,12 @@ import com.example.twomack.nycschooldataviewer.data.District;
 import java.util.List;
 
 
-/**
- * Created by swaitkus on 4/4/18.
- */
-
 public class ApplicationDataModule {
     private List<DetailedSchool> searchData;
     private MutableLiveData<List<School>> schools;
     private MutableLiveData<List<DetailedSchool>> detailedSchools;
     private MutableLiveData<List<DetailedSchool>> displaySchools;
     private MutableLiveData<List<Integer>> filterRequirements;
-    private MutableLiveData<List<District>> schoolDistricts;
-
-    public MutableLiveData<List<District>> getSchoolDistricts(){
-        if (schoolDistricts == null){
-            schoolDistricts = new MutableLiveData<>();
-        }
-        return schoolDistricts;
-    }
-
-    public void setSchoolDistricts(List<District> schoolDistricts){
-        if (this.schoolDistricts == null){
-            this.schoolDistricts = new MutableLiveData<>();
-        }
-        this.schoolDistricts.setValue(schoolDistricts);
-    }
 
     public MutableLiveData<List<Integer>> getFilterRequirements() {
         if(filterRequirements == null) {

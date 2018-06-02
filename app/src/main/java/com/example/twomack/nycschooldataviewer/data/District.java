@@ -3,6 +3,7 @@ package com.example.twomack.nycschooldataviewer.data;
 import android.util.Log;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by twomack on 4/10/18.
@@ -10,11 +11,8 @@ import java.util.List;
 
 public class District {
 
-    private double averageGraduationRate;
-    private double averageSAT;
     private int districtNumber;
     private List<DetailedSchool> schoolsInDistrict;
-    private double percentageOfStudentsSafe;
 
 
     public District(int districtNumber){
@@ -39,9 +37,8 @@ public class District {
         if (schoolsCounted != 0){
 
 
-            String SATString = String.format("%.0f", totalSAT/schoolsCounted);
-            averageSAT = Double.valueOf(SATString);
-            return averageSAT;
+            String SATString = String.format(Locale.getDefault(), "%.0f", totalSAT/schoolsCounted);
+            return Double.valueOf(SATString);
         }else{
             Log.e("error", "can't return a valid average SAT for this district");
             return null;
@@ -61,8 +58,7 @@ public class District {
         }
         if (schoolsCounted != 0){
 
-            averageGraduationRate = totalGradNumber/schoolsCounted;
-            return averageGraduationRate;
+            return totalGradNumber / schoolsCounted;
         }else{
             Log.e("error", "can't return a valid average graduation rate for this district");
             return null;
@@ -89,9 +85,8 @@ public class District {
             countOfSchools++;
         }
         if (countOfSchools != 0){
-            String safetyString = String.format("%.0f", aggregateSafetyPercentage/countOfSchools);
-            percentageOfStudentsSafe = Double.valueOf(safetyString);
-            return percentageOfStudentsSafe;
+            String safetyString = String.format(Locale.getDefault(), "%.0f", aggregateSafetyPercentage/countOfSchools);
+            return Double.valueOf(safetyString);
         }else{
             Log.e("error", "can't return a safety score for this district");
             return null;

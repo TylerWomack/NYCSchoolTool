@@ -1,5 +1,6 @@
 package com.example.twomack.nycschooldataviewer.recyclerview.adapters;
 
+import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -26,43 +27,42 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
         void onSchoolClicked(int position);
     }
 
-    // Provide a reference to the views for each data item
-    // Complex data items may need more than one view per item, and
-    // you provide access to all the views for a data item in a view holder
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder {
 
         // each data item is just a string in this case
-        public TextView name, SATTotal, neighborhood, borough, graduationRate, students, safetyRating, distance;
-        public RelativeLayout summaryLayout;
-        public ViewHolder(View v) {
+        TextView name, SATTotal, neighborhood, borough, graduationRate, students, safetyRating, distance;
+        RelativeLayout summaryLayout;
+        ViewHolder(View v) {
             super(v);
-            name = (TextView) v.findViewById(R.id.name_summary);
-            SATTotal = (TextView) v.findViewById(R.id.SAT_summary);
-            borough = (TextView) v.findViewById(R.id.summary_borough);
-            graduationRate = (TextView) v.findViewById(R.id.graduation_rate_summary);
-            students = (TextView) v.findViewById(R.id.summary_population);
-            safetyRating = (TextView) v.findViewById(R.id.safety_summary);
-            distance = (TextView) v.findViewById(R.id.summary_distance);
-            summaryLayout = (RelativeLayout) v.findViewById(R.id.summary_layout);
+            findViews(v);
         }
 
-        public RelativeLayout getSchoolRelativeLayout(){return summaryLayout;}
+        RelativeLayout getSchoolRelativeLayout(){return summaryLayout;}
+
+        private void findViews(View v){
+            name = v.findViewById(R.id.name_summary);
+            SATTotal = v.findViewById(R.id.SAT_summary);
+            borough = v.findViewById(R.id.summary_borough);
+            graduationRate = v.findViewById(R.id.graduation_rate_summary);
+            students = v.findViewById(R.id.summary_population);
+            safetyRating = v.findViewById(R.id.safety_summary);
+            distance = v.findViewById(R.id.summary_distance);
+            summaryLayout = v.findViewById(R.id.summary_layout);
+
+        }
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
     public MainRecyclerViewAdapter(OnSchoolSelectedListener listener) { this.listener = listener;}
 
-    //A ViewGroup is a linearlayout, etc.
-    // Create new views (invoked by the layout manager)
-    //@Override
+    // Create new views (invoked by the layout manager) - inflates each view
     public MainRecyclerViewAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
                                                    int viewType) {
 
         // create a new view
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.school_summary, parent, false);
-        ViewHolder vh = new ViewHolder(v);
-        return vh;
+        return new ViewHolder(v);
     }
 
     public void setSchoolList(List<DetailedSchool> schoolList) {
@@ -70,12 +70,27 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
         notifyDataSetChanged();
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
-    //@Override
+    // Replace the contents of a view when it is bound (updating it with the right data before we display it)
+    @SuppressLint("SetTextI18n")
     public void onBindViewHolder(final MainRecyclerViewAdapter.ViewHolder holder, int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
 
+        setHolderText(holder, position);
+
+        setSchoolSafetyColor(holder, position);
+        setGraduationRateColor(holder, position);
+        setSATScoreColor(holder, position);
+
+        holder.getSchoolRelativeLayout().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                listener.onSchoolClicked(holder.getAdapterPosition());
+            }
+        });
+    }
+
+    private void setHolderText(MainRecyclerViewAdapter.ViewHolder holder, int position){
         holder.name.setText(schoolList.get(position).getSchoolName());
         holder.graduationRate.setText(schoolList.get(position).getGraduationRate() + "% Graduate" );
         holder.borough.setText(schoolList.get(position).getBorough());
@@ -89,7 +104,9 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
         }else {
             holder.distance.setVisibility(View.INVISIBLE);
         }
+    }
 
+    private void setSchoolSafetyColor(MainRecyclerViewAdapter.ViewHolder holder, int position){
         if (schoolList.get(position).getPctStuSafe().length() > 1) {
             if (Integer.valueOf(schoolList.get(position).getPctStuSafe()) > 90) {
                 holder.safetyRating.setTextColor(Color.argb(255, 95, 186, 50));
@@ -104,11 +121,12 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
                 holder.safetyRating.setTextColor(Color.GRAY);
             }
         }
-            if (schoolList.get(position).getPctStuSafe() == null || schoolList.get(position).getPctStuSafe().isEmpty()){
-                holder.safetyRating.setTextColor(Color.GRAY);
-            }
+        if (schoolList.get(position).getPctStuSafe() == null || schoolList.get(position).getPctStuSafe().isEmpty()){
+            holder.safetyRating.setTextColor(Color.GRAY);
+        }
+    }
 
-
+    private void setGraduationRateColor(MainRecyclerViewAdapter.ViewHolder holder, int position){
         if (schoolList.get(position).getGraduationRate().length() > 1) {
             if (Integer.valueOf(schoolList.get(position).getGraduationRate()) > 85) {
                 holder.graduationRate.setTextColor(Color.argb(255, 95, 186, 50));
@@ -122,10 +140,12 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
                 holder.graduationRate.setTextColor(Color.GRAY);
             }
         }
-            if (schoolList.get(position).getGraduationRate() == null || schoolList.get(position).getGraduationRate().isEmpty()){
-                holder.graduationRate.setTextColor(Color.GRAY);
-            }
+        if (schoolList.get(position).getGraduationRate() == null || schoolList.get(position).getGraduationRate().isEmpty()){
+            holder.graduationRate.setTextColor(Color.GRAY);
+        }
+    }
 
+    private void setSATScoreColor(MainRecyclerViewAdapter.ViewHolder holder, int position){
 
         if (schoolList.get(position).getTotalSATScore().length() > 1) {
             if (Integer.valueOf(schoolList.get(position).getTotalSATScore()) > 1100) {
@@ -141,22 +161,12 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
             }
         }
 
-            if (schoolList.get(position).getTotalSATScore().isEmpty() || schoolList.get(position).getTotalSATScore() == null){
-                holder.SATTotal.setTextColor(Color.GRAY);
-            }
-
-
-        holder.getSchoolRelativeLayout().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                listener.onSchoolClicked(holder.getAdapterPosition());
-            }
-        });
-
+        if (schoolList.get(position).getTotalSATScore().isEmpty() || schoolList.get(position).getTotalSATScore() == null){
+            holder.SATTotal.setTextColor(Color.GRAY);
+        }
     }
 
     // Return the size of your dataset (invoked by the layout manager)
-    //@Override
     public int getItemCount() {
         if (schoolList != null){
             return schoolList.size();

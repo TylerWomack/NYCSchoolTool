@@ -10,7 +10,7 @@ import com.example.twomack.nycschooldataviewer.data.ApplicationDataModule;
 
 public class MainApplication extends Application {
 
-
+    //a place to store persistent, application-wide data.
     private static ApplicationDataModule module;
 
     @Override

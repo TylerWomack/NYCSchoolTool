@@ -3,15 +3,15 @@ package com.example.twomack.nycschooldataviewer.data;
 import android.util.Log;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Locale;
 
 
 /**
  * Created by twomack on 3/26/18.
  */
 
-public class DetailedSchool implements Serializable{
+@SuppressWarnings("unused")
+public class DetailedSchool implements Serializable {
 
     private Integer schoolDistrict;
     private String academicopportunities1;
@@ -42,7 +42,7 @@ public class DetailedSchool implements Serializable{
     private String endTime;
     private String extracurricular_activities;
     private String fax_number;
-    private String finalgrades;
+    private String final_grades;
     private String grade9geapplicants1;
     private String grade9geapplicants2;
     private String grade9geapplicantsperseat1;
@@ -102,12 +102,10 @@ public class DetailedSchool implements Serializable{
     private String website;
     private String zip;
     private double distance;
-    private String totalSATScore;
     private String mathSATScore;
     private String englishSATScore;
     private String writingSATScore;
     private String numberOfTestTakers;
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
 
     public Integer getSchoolDistrict() {
@@ -134,7 +132,6 @@ public class DetailedSchool implements Serializable{
 
         return allSports;
     }
-
 
 
     public String getRequirement5_1() {
@@ -256,18 +253,18 @@ public class DetailedSchool implements Serializable{
     }
 
     public void setAdvancedplacementCourses(String advancedplacementCourses) {
-        this.advancedplacement_courses = advancedplacement_courses;
+        this.advancedplacement_courses = advancedplacementCourses;
     }
 
     public String getAttendanceRate() {
 
-        if (attendance_rate != null){
+        if (attendance_rate != null) {
             return convertToDecimalForm(attendance_rate);
-        }else return "";
+        } else return "";
     }
 
     public void setAttendanceRate(String attendanceRate) {
-        this.attendance_rate = attendance_rate;
+        this.attendance_rate = attendanceRate;
     }
 
     public String getBbl() {
@@ -295,14 +292,14 @@ public class DetailedSchool implements Serializable{
     }
 
     public String getBorough() {
-        if (borough != null){
+        if (borough != null) {
             StringBuilder sb = new StringBuilder(borough);
-            for (int i = 0; i < borough.length(); i++){
+            for (int i = 0; i < borough.length(); i++) {
                 sb.setCharAt(i, Character.toLowerCase(sb.charAt(i)));
             }
             sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
             return sb.toString();
-        }else return "";
+        } else return "";
     }
 
     public void setBorough(String borough) {
@@ -360,9 +357,9 @@ public class DetailedSchool implements Serializable{
     }
 
     public String getCollegeCareerRate() {
-        if (college_career_rate != null){
+        if (college_career_rate != null) {
             return convertToDecimalForm(college_career_rate);
-        }else return "";
+        } else return "";
 
     }
 
@@ -427,11 +424,11 @@ public class DetailedSchool implements Serializable{
     }
 
     public String getFinalgrades() {
-        return finalgrades;
+        return final_grades;
     }
 
-    public void setFinalgrades(String finalgrades) {
-        this.finalgrades = finalgrades;
+    public void setFinalgrades(String final_grades) {
+        this.final_grades = final_grades;
     }
 
     public String getGrade9geapplicants1() {
@@ -539,17 +536,15 @@ public class DetailedSchool implements Serializable{
     }
 
     public String getGraduationRate() {
-        if (graduation_rate != null){
+        if (graduation_rate != null) {
             return convertToDecimalForm(graduation_rate);
-        }else return "";
+        } else return "";
     }
 
-    public String convertToDecimalForm(String unconverted){
+    private String convertToDecimalForm(String unconverted) {
         double rate = Double.valueOf(unconverted);
         rate = rate * 100;
-        String to_return = String.format("%.0f", rate);
-        to_return = to_return;
-        return to_return;
+        return String.format(Locale.getDefault(), "%.0f", rate);
     }
 
     public void setGraduationRate(String graduation_rate) {
@@ -648,13 +643,13 @@ public class DetailedSchool implements Serializable{
         return convertToDecimalForm(pct_stu_enough_variety);
     }
 
-    public double getPctStuEnoughVarietyDouble(){
+    public double getPctStuEnoughVarietyDouble() {
 
         String variety = getPctStuEnoughVariety();
-        if (variety != null && !variety.isEmpty()){
+        if (variety != null && !variety.isEmpty()) {
             return Double.valueOf(variety);
-        }else {
-            Log.e("error", "can't return this as a double");
+        } else {
+            Log.i("info", "missing/invalid variety rating");
             return -1;
         }
 
@@ -665,23 +660,20 @@ public class DetailedSchool implements Serializable{
     }
 
     public String getPctStuSafe() {
-        if (pct_stu_safe != null){
+        if (pct_stu_safe != null) {
             return convertToDecimalForm(pct_stu_safe);
-        }else return "";
+        } else return "";
     }
 
-
-    //todo: why not just store this as a double in the first place?
-    public double getPctStuSafeDouble(){
+    public double getPctStuSafeDouble() {
 
         String safe = getPctStuSafe();
-        if (safe != null && !safe.isEmpty()){
+        if (safe != null && !safe.isEmpty()) {
             return Double.valueOf(safe);
-        }else {
-            Log.e("error", "can't return this as a double");
+        } else {
+            Log.i("error", "missing/invalid safety rating");
             return -1;
         }
-
     }
 
     public void setPctStuSafe(String pct_stu_safe) {
@@ -736,7 +728,7 @@ public class DetailedSchool implements Serializable{
         this.program2 = program2;
     }
 
-    public String getPsalSportsBoys() {
+    private String getPsalSportsBoys() {
         return psal_sports_boys;
     }
 
@@ -744,7 +736,7 @@ public class DetailedSchool implements Serializable{
         this.psal_sports_boys = psal_sports_boys;
     }
 
-    public String getPsalSportsGirls() {
+    private String getPsalSportsGirls() {
         return psal_sports_girls;
     }
 
@@ -880,55 +872,48 @@ public class DetailedSchool implements Serializable{
         this.zip = zip;
     }
 
-    public Map<String, Object> getAdditionalProperties() {
-        return this.additionalProperties;
-    }
-
-    public double getDistanceInMeters(){
+    public double getDistanceInMeters() {
         return distance;
     }
 
-    public double setAndGetDistanceInMeters(double distance){
+    public double setAndGetDistanceInMeters(double distance) {
         this.distance = distance;
         return distance;
     }
 
-    public DetailedSchool setDistanceAndGetThis(double distance){
+    public DetailedSchool setDistanceAndGetThis(double distance) {
         this.distance = distance;
         return this;
     }
 
-    public void setDistanceInMeters(double distance){
+    public void setDistanceInMeters(double distance) {
         this.distance = distance;
     }
 
-    public String getDistanceInMiles(){
+    public String getDistanceInMiles() {
 
-        return String.format("%.1f", distance/1609.34);
+        return String.format(Locale.getDefault(), "%.1f", distance / 1609.34);
 
     }
 
-    public void setAdditionalProperty(String name, Object value) {
-        this.additionalProperties.put(name, value);
+    public void setTotalSATScore() {
+        String totalSATScore = getTotalSATScore();
     }
 
-    public void setTotalSATScore(){ this.totalSATScore = getTotalSATScore();}
-
-    public String getTotalSATScore(){
+    public String getTotalSATScore() {
 
         if (mathSATScore == null || englishSATScore == null)
             return "";
 
-        if (mathSATScore.isEmpty() || englishSATScore.isEmpty()){
-            Log.e("error", "can't return total SAT score if either half is empty!");
+        if (mathSATScore.isEmpty() || englishSATScore.isEmpty()) {
+            Log.i("invalid data", "can't return total SAT score if either half is empty!");
             return "";
         }
 
         //testing for things like "n/a" or other non-numeric entries
-        if (!android.text.TextUtils.isDigitsOnly(mathSATScore) || !android.text.TextUtils.isDigitsOnly(englishSATScore)){
+        if (!android.text.TextUtils.isDigitsOnly(mathSATScore) || !android.text.TextUtils.isDigitsOnly(englishSATScore)) {
             return "";
         }
-
 
 
         double mathScore = Double.valueOf(mathSATScore);
@@ -936,57 +921,71 @@ public class DetailedSchool implements Serializable{
         double totalScore = mathScore + englishScore;
 
 
-        if (totalScore < 400){
+        if (totalScore < 400) {
             Log.e("impossible value", "SAT scores shouldn't go below 400");
         }
-
-        String totalScoreString = String.format("%.0f", totalScore);
-        return totalScoreString;
+        return String.format(Locale.getDefault(), "%.0f", totalScore);
     }
 
-    public void setEnglishSATScore(String score){this.englishSATScore = score;}
+    public void setEnglishSATScore(String score) {
+        this.englishSATScore = score;
+    }
 
-    public String getEnglishSATScore(){return englishSATScore;}
+    public String getEnglishSATScore() {
+        return englishSATScore;
+    }
 
-    public void setMathSATScore(String score){this.mathSATScore = score;}
+    public void setMathSATScore(String score) {
+        this.mathSATScore = score;
+    }
 
-    public String getMathSATScore(){return mathSATScore;}
+    public String getMathSATScore() {
+        return mathSATScore;
+    }
 
-    public void setWritingSATScore(String score){this.writingSATScore = score;}
+    public void setWritingSATScore(String score) {
+        this.writingSATScore = score;
+    }
 
-    public String getWritingSATScore(){return writingSATScore;}
+    public String getWritingSATScore() {
+        return writingSATScore;
+    }
 
-    public void setNumberOfTestTakers(String number){this.numberOfTestTakers = number;}
+    public void setNumberOfTestTakers(String number) {
+        this.numberOfTestTakers = number;
+    }
 
-    public String getNumberOfTestTakers(){return numberOfTestTakers;}
+    public String getNumberOfTestTakers() {
+        return numberOfTestTakers;
+    }
 
-    public double getTotalSATDouble(){
+    public double getTotalSATDouble() {
         String score = getTotalSATScore();
-        if (score != null && !score.isEmpty()){
+        if (score != null && !score.isEmpty()) {
             return Double.valueOf(score);
-        }else {
-            Log.e("error", "can't return this score as a double");
+        } else {
+            Log.i("info", "school missing/invalid SAT score");
             return -1;
         }
 
     }
 
-    public double getGraduationRateDouble(){
+    public double getGraduationRateDouble() {
         String rate = getGraduationRate();
-        if (rate != null && !rate.isEmpty()){
+        if (rate != null && !rate.isEmpty()) {
             return Double.valueOf(rate);
-        }else {
-            Log.e("error", "can't return this graduation rate as a double");
+        } else {
+            Log.i("info", "school missing/invalid graduation rate");
             return -1;
         }
     }
 
-    public double getCollegeCareerRateDouble(){
+    public double getCollegeCareerRateDouble() {
         String rate = getCollegeCareerRate();
-        if (rate != null && !rate.isEmpty()){
+        if (rate != null && !rate.isEmpty()) {
             return Double.valueOf(rate);
-        }else {
-            Log.e("error", "can't return this college rate as a double");
+        } else {
+            Log.i("info", "school missing/invalid career rate");
             return -1;
         }
     }

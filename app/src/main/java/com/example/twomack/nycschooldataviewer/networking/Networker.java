@@ -1,5 +1,6 @@
 package com.example.twomack.nycschooldataviewer.networking;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 
 import com.example.twomack.nycschooldataviewer.data.DetailedSchool;
@@ -22,7 +23,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class Networker {
 
-
     private static Networker INSTANCE;
     private Retrofit retrofitInstance;
 
@@ -33,14 +33,15 @@ public class Networker {
         return INSTANCE;
     }
 
-    public Networker(){
-
-    }
-
+    /**
+     * Singleton style, returns an instance of Retrofit.Builder().
+     * @return an instance of Retrofit.Builder() that is hooked up to data.cityofnewyork, an RxJava adapter, and uses GSON deserialization.
+     */
     private Retrofit buildRetrofit(){
         if(retrofitInstance != null) {
             return retrofitInstance;
         }
+
         retrofitInstance = new Retrofit.Builder()
                 .baseUrl("https://data.cityofnewyork.us/resource/")
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
@@ -50,13 +51,19 @@ public class Networker {
         return retrofitInstance;
     }
 
-    public void allSchoolsDetailed(){
+    /**
+     * Uses Retrofit and RxJava to get a list of DetailedSchools, which are sorted alphabetically and used to set LiveData in the ApplicationDataModule.
+     */
+    @SuppressLint("CheckResult")
+    public void fetchAllSchoolsDetailed(){
         Retrofit retrofit = buildRetrofit();
 
         NYCService postService = retrofit.create(NYCService.class);
         io.reactivex.Observable<List<DetailedSchool>> returnedSchools = postService.getAllSchoolsDetailed();
 
+        //subscribeOn Schedulers.io - a background thread used for network calls.
         returnedSchools.subscribeOn(Schedulers.io())
+                //sends results to the main thread
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(new DisposableObserver<List<DetailedSchool>>() {
                     @Override
@@ -68,9 +75,7 @@ public class Networker {
 
                     @Override
                     public void onError(Throwable e) {
-
                         Log.e("error", "Network failed to return detailed schools");
-
                     }
 
                     @Override
@@ -89,11 +94,15 @@ public class Networker {
         return list;
     }
 
-    public void allSchoolsSAT(){
+    /**
+     * Uses Retrofit and RxJava to get a list of Schools (which contain little more than simple SAT data), which are used to set LiveData in the ApplicationDataModule.
+     */
+    @SuppressLint("CheckResult")
+    public void fetchAllSchoolsSAT(){
         Retrofit retrofit = buildRetrofit();
 
         NYCService postService = retrofit.create(NYCService.class);
-        io.reactivex.Observable<List<School>> returnedSchools = postService.getAllSchools();
+        io.reactivex.Observable<List<School>> returnedSchools = postService.getAllSchoolsSAT();
                 returnedSchools.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(new DisposableObserver<List<School>>() {

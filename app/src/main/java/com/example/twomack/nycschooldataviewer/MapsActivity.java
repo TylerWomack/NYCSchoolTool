@@ -3,18 +3,13 @@ package com.example.twomack.nycschooldataviewer;
 import android.content.Context;
 
 import android.content.Intent;
-import android.graphics.Color;
-import android.location.Address;
-import android.location.Geocoder;
 import android.support.annotation.Nullable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.example.twomack.nycschooldataviewer.data.DetailedSchool;
 import com.example.twomack.nycschooldataviewer.data.District;
@@ -28,7 +23,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polygon;
 import com.google.maps.android.data.geojson.GeoJsonFeature;
 import com.google.maps.android.data.geojson.GeoJsonLayer;
 import com.google.maps.android.data.geojson.GeoJsonMultiPolygon;
@@ -56,11 +50,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     GeoJsonLayer geoJsonLayer;
     Boolean hasIcons;
+    List<District> districts;
+    SchoolDistrictUtility schoolDistrictUtility;
 
     @Nullable
     @BindView(R.id.toolbar)
     Toolbar toolbar;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,9 +66,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         ButterKnife.bind(this);
+        schoolDistrictUtility = new SchoolDistrictUtility();
         setSupportActionBar(toolbar);
-        toolbar.setTitle("");
-
+        if (toolbar != null) {
+            toolbar.setTitle("");
+        }
     }
 
     @Override
@@ -83,39 +80,38 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return super.onCreateOptionsMenu(menu);
     }
 
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        addSchoolIcons();
-        hasIcons = true;
+        addSchoolIconsAndFocusCamera();
         addSchoolZonesLayer();
-        buildDistricts();
-        List<District> districts = MainApplication.getApplicationDataModule().getSchoolDistricts().getValue();
+        //buildDistricts gets the districts from disk if available, or it generates and saves them to disk.
+        districts = getDistricts();
+
+        //on the initial load, the map is colored to reflect SAT scores
+        colorBySAT(districts);
+    }
+
+    //region menu clickListeners
+    public void SATButtonClicked(MenuItem m){
+        colorBySAT(districts);
+    }
+
+    public void safetyButtonClicked(MenuItem m){
         colorBySafety(districts);
     }
 
-    public void buildDistricts(){
-        //dbnsAndDistricts is a mapping of DetailedSchool dbns and their school districts used to create Districts
-        HashMap<String, Integer> dbnsAndDistricts = getDistrictDataFromDisk();
-        if (dbnsAndDistricts == null){
-            //this is how we generate the data for the first time. Do this if you haven't saved it to disk yet. This takes a few seconds.
-            dbnsAndDistricts = findSchoolDistricts();
-            saveDistrictsToDisk(dbnsAndDistricts);
-        }
-
-        //building districts from our mapping of dbns and district #s.
-        if (dbnsAndDistricts != null){
-            //adding district data to our DetailedSchools
-            setDistrictData(dbnsAndDistricts);
-            List<DetailedSchool> searchData = MainApplication.getApplicationDataModule().getSearchData();
-            SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
-            //this creates districts and saves them in MainApplicationDataModule
-            schoolDataUtility.buildDistricts(searchData);
-        }
+    public void graduationButtonClicked(MenuItem m){
+        colorByGraduation(districts);
     }
+    //endregion
 
-    public void addSchoolIcons(){
+    /**
+     * This method creates and displays an icon for all of the currently displayed schools (the schools that were not removed by the filter in the previous activity),
+     * It retrieves the location of the school, adds a marker, and sets a click listener for each marker that will display the name of the school and navigate to the details page if clicked.
+     */
+    public void addSchoolIconsAndFocusCamera(){
         List<DetailedSchool> displayedSchools = MainApplication.getApplicationDataModule().getCurrentlyDisplayedSchools();
         ArrayList<Double> latitudes = new ArrayList<>();
         ArrayList<Double> longitudes = new ArrayList<>();
@@ -144,15 +140,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(findAverageLatitude(latitudes), findAverageLongitude(longitudes))));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(findAverageLatitude(latitudes), findAverageLongitude(longitudes)), 11f));
+        LatLng latLng = new LatLng(findAverageLatitude(latitudes), findAverageLongitude(longitudes));
+        //orients camera to center on the average latitude and longitude of the schools on the map
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        //zooms in
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 11f));
+        hasIcons = true;
     }
+
+    //region adding school zones to map
 
     public void addSchoolZonesLayer(){
         geoJsonLayer = getGeoJsonLayer();
         geoJsonLayer.addLayerToMap();
     }
 
+    /**
+     * If the geoJsonLayer has already been created, it returns it. Otherwise, it creates it using a GeoJson file in the raw folder.
+     * @return a geoJsonLayer (school zone polygons)
+     */
     public GeoJsonLayer getGeoJsonLayer(){
         if (geoJsonLayer == null){
             try {
@@ -167,30 +173,74 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         return geoJsonLayer;
     }
+    //endregion
 
-    public HashMap<String, Integer> findSchoolDistricts(){
+    /**
+     * Checks the disk for saved data related to school districts (a mapping of schools and their district). If it isn't found, it creates this mapping and saves it to disk.
+     * Using the map of schools and districts (which has either been retrieved from disk or freshly created), it appends school district information to
+     * our list of schools in the application data module. It then creates and returns a list of Districts.
+     *
+     * @return a list of Districts
+     */
+    public List<District> getDistricts(){
+
+        //dbnsAndDistricts is a mapping of DetailedSchool dbns and their school districts used to create Districts
+        HashMap<String, Integer> dbnsAndDistricts = getDistrictDataFromDisk();
+
+        if (dbnsAndDistricts == null){
+            //this is how we generate the data for the first time. Do this if you haven't saved it to disk yet. This takes less than three seconds on most devices.
+            dbnsAndDistricts = generateSchoolDistrictData();
+            saveDistrictsToDisk(dbnsAndDistricts);
+        }
+
+        //building districts from our mapping of dbns and district #s.
+        if (dbnsAndDistricts != null){
+            //adding district data to our DetailedSchools
+            setDistrictData(dbnsAndDistricts);
+            List<DetailedSchool> searchData = MainApplication.getApplicationDataModule().getSearchData();
+            SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
+            //this creates districts and saves them in MainApplicationDataModule
+            return schoolDataUtility.buildDistricts(searchData);
+        }
+        return null;
+    }
+
+    //region methods to generate school district data
+
+    /**
+     *
+     * This method iterates over all of the school districts in our geoJsonLayer. Each of the school districts is composed of one of more polygons (up to 21 different polygons).
+     * This method iterates over each of the polygons that compose a school district, and tests every school against every polygon - if the school is in the polygon, we know it is in
+     * the school district. Once a school has been found within a polygon, we cease testing it to save memory.
+     * @return a hashmap containing school ids and associated school districts.
+     */
+    public HashMap<String, Integer> generateSchoolDistrictData(){
 
         geoJsonLayer = getGeoJsonLayer();
         HashMap<String, Integer> dbnsAndDistricts = new HashMap<>();
         List<DetailedSchool> schoolsToCheck = new ArrayList<>(MainApplication.getApplicationDataModule().getSearchData());
 
-        for (Iterator featureIterator = geoJsonLayer.getFeatures().iterator(); featureIterator.hasNext();){
-            GeoJsonFeature feature = (GeoJsonFeature) featureIterator.next();
+        for (GeoJsonFeature feature : geoJsonLayer.getFeatures()) {
+
+            //each feature is a school district
             GeoJsonMultiPolygon multiPolygon = (GeoJsonMultiPolygon) feature.getGeometry();
             List<GeoJsonPolygon> polygonList = multiPolygon.getPolygons();
-            for (GeoJsonPolygon polygon : polygonList){
 
-                List<LatLng> latLngs = polygon.getOuterBoundaryCoordinates();
+            //iterating over all the polygons that make up a school district
+            for (GeoJsonPolygon district : polygonList) {
 
-                SchoolDistrictUtility schoolDistrictUtility = new SchoolDistrictUtility(latLngs);
+                List<LatLng> districtBoundaryPoints = district.getOuterBoundaryCoordinates();
 
-                for (Iterator<DetailedSchool> iterator = schoolsToCheck.iterator(); iterator.hasNext();){
+                SchoolDistrictUtility.Point[] boundaryPoints = schoolDistrictUtility.getBoundaryPoints(districtBoundaryPoints);
+                //iterating over all the schools
+                for (Iterator<DetailedSchool> iterator = schoolsToCheck.iterator(); iterator.hasNext(); ) {
                     DetailedSchool school = iterator.next();
-                    Boolean schoolIsInPolygon = findIfSchoolIsInPolygon(school, schoolDistrictUtility);
+                    Boolean schoolIsInPolygon = findIfSchoolIsInDistrict(school, boundaryPoints);
 
-                    if (schoolIsInPolygon){
-                        String district = feature.getProperty("school_dist");
-                        dbnsAndDistricts.put(school.getDbn(), Integer.valueOf(district));
+                    //if the school is in the district, add it to our hashmap, and remove the school from the list of schools to check.
+                    if (schoolIsInPolygon) {
+                        String districtName = feature.getProperty("school_dist");
+                        dbnsAndDistricts.put(school.getDbn(), Integer.valueOf(districtName));
                         iterator.remove();
                     }
                 }
@@ -199,47 +249,53 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return dbnsAndDistricts;
     }
 
-    public void changeDistrictColor(District district, int color){
+    /**
+     * Formats data and calls a method in SchoolDistrictUtility to find if a school is located in a given polygon.
+     * @param school the school we are testing
+     * @param boundaryPoints the boundary points of the polygon we are testing
+     * @return true if the school is found within the polygon, otherwise false.
+     */
+    public Boolean findIfSchoolIsInDistrict(DetailedSchool school, SchoolDistrictUtility.Point[] boundaryPoints){
 
-        GeoJsonPolygonStyle polygonStyle = new GeoJsonPolygonStyle();
-        polygonStyle.setFillColor(color);
-        geoJsonLayer = getGeoJsonLayer();
+        String lat = school.getLatitude();
+        String lon = school.getLongitude();
 
-        for (Iterator featureIterator = geoJsonLayer.getFeatures().iterator(); featureIterator.hasNext();){
-            //for our purposes, a feature is a district
-            GeoJsonFeature feature = (GeoJsonFeature) featureIterator.next();
-            String featureDistrictNumber = feature.getProperty("school_dist");
-            int featureDistrict = Integer.parseInt(featureDistrictNumber);
-            //if we've found the our district's feature (polygon)
-            if (district.getDistrictNumber() == featureDistrict){
-                feature.setPolygonStyle(polygonStyle);
+        Double latitude = null;
+        Double longitude = null;
+
+        if (lat != null && lon != null) {
+            latitude = Double.valueOf(lat);
+            longitude = Double.valueOf(lon);
+        }
+
+        if (latitude != null && longitude != null) {
+            Boolean contains = schoolDistrictUtility.contains(Double.valueOf(school.getLatitude()), Double.valueOf(school.getLongitude()), boundaryPoints);
+
+            if (contains){
+                return true;
             }
         }
+        return false;
     }
+    //endregion
 
-    public void SATButtonClicked(MenuItem m){
-        colorBySAT(MainApplication.getApplicationDataModule().getSchoolDistricts().getValue());
-    }
-
-    public void safetyButtonClicked(MenuItem m){
-        colorBySafety(MainApplication.getApplicationDataModule().getSchoolDistricts().getValue());
-    }
-
-    public void graduationButtonClicked(MenuItem m){
-        colorByGraduation(MainApplication.getApplicationDataModule().getSchoolDistricts().getValue());
-    }
-
+    /**
+     * If the map doesn't have icons, it adds them. If it does, it removes them.
+     */
     public void toggleIcons(MenuItem m){
 
         if (!hasIcons){
-            addSchoolIcons();
+            addSchoolIconsAndFocusCamera();
             hasIcons = true;
         }else {
             mMap.clear();
+            addSchoolZonesLayer();
+            colorBySAT(districts);
             hasIcons = false;
         }
     }
 
+    //region map coloring methods
     public void colorBySAT(List<District> districts){
         double highestSAT = 0;
         double lowestSAT = 10000;
@@ -270,7 +326,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         for (District district : districts){
             if (district.getAverageSAT() != null)
-            changeDistrictColor(district, SchoolDistrictUtility.colorPicker(highestSAT, lowestSAT, average, district.getAverageSAT()));
+            changeDistrictColor(district, schoolDistrictUtility.colorPicker(highestSAT, lowestSAT, average, district.getAverageSAT()));
         }
     }
 
@@ -294,7 +350,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         double totalScore = 0;
         double schoolCount = 0;
-        double average = 0;
+        double average;
         for (Double score : safetyList){
             totalScore = totalScore + score;
             schoolCount++;
@@ -304,7 +360,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         for (District district : districts){
             if (district.getAverageSAT() != null)
-                changeDistrictColor(district, SchoolDistrictUtility.colorPicker(highestSafety, lowestSafety, average, district.getPercentageOfStudentsSafe()));
+                changeDistrictColor(district, schoolDistrictUtility.colorPicker(highestSafety, lowestSafety, average, district.getPercentageOfStudentsSafe()));
         }
     }
 
@@ -328,7 +384,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         double totalScore = 0;
         double schoolCount = 0;
-        double average = 0;
+        double average;
         for (Double score : gradList){
             totalScore = totalScore + score;
             schoolCount++;
@@ -338,34 +394,30 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         for (District district : districts){
             if (district.getAverageSAT() != null)
-                changeDistrictColor(district, SchoolDistrictUtility.colorPicker(highestGrad, lowestGrad, average, district.getAverageGraduationRate()));
+                changeDistrictColor(district, schoolDistrictUtility.colorPicker(highestGrad, lowestGrad, average, district.getAverageGraduationRate()));
         }
     }
 
+    public void changeDistrictColor(District district, int color){
 
-    public Boolean findIfSchoolIsInPolygon(DetailedSchool school, SchoolDistrictUtility schoolDistrictUtility){
+        GeoJsonPolygonStyle polygonStyle = new GeoJsonPolygonStyle();
+        polygonStyle.setFillColor(color);
+        geoJsonLayer = getGeoJsonLayer();
 
-        String lat = school.getLatitude();
-        String lon = school.getLongitude();
-
-        Double latitude = null;
-        Double longitude = null;
-
-        if (lat != null && lon != null) {
-            latitude = Double.valueOf(lat);
-            longitude = Double.valueOf(lon);
-        }
-
-        if (latitude != null && longitude != null) {
-            Boolean contains = schoolDistrictUtility.contains(Double.valueOf(school.getLatitude()), Double.valueOf(school.getLongitude()));
-
-            if (contains){
-                return true;
+        for (Iterator featureIterator = geoJsonLayer.getFeatures().iterator(); featureIterator.hasNext();){
+            //for our purposes, a feature is a district
+            GeoJsonFeature feature = (GeoJsonFeature) featureIterator.next();
+            String featureDistrictNumber = feature.getProperty("school_dist");
+            int featureDistrict = Integer.parseInt(featureDistrictNumber);
+            //if we've found the our district's feature (polygon)
+            if (district.getDistrictNumber() == featureDistrict){
+                feature.setPolygonStyle(polygonStyle);
             }
         }
-        return false;
     }
+    //endregion
 
+    //region utility methods for camera orientation
     public double findAverageLatitude(ArrayList<Double> latitudes){
         double sum = 0;
         int count = 0;
@@ -385,7 +437,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         return sum/count;
     }
+    //endregion
 
+    //region methods for saving/loading school district data
     public void saveDistrictsToDisk(HashMap<String, Integer> dbnsAndDistricts){
         String filename = "districtData";
         FileOutputStream outputStream;
@@ -431,4 +485,5 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             MainApplication.getApplicationDataModule().setSearchData(schools);
         }
     }
+    //endregion
 }

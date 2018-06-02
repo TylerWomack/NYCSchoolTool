@@ -1,8 +1,6 @@
 package com.example.twomack.nycschooldataviewer;
 
 import android.Manifest;
-import android.arch.lifecycle.ViewModelProviders;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -27,27 +25,20 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.twomack.nycschooldataviewer.data.DetailedSchool;
-import com.example.twomack.nycschooldataviewer.data.MainApplication;
 import com.example.twomack.nycschooldataviewer.data.School;
-import com.example.twomack.nycschooldataviewer.networking.CompositeDisposableModule;
 import com.example.twomack.nycschooldataviewer.networking.Networker;
 import com.example.twomack.nycschooldataviewer.recyclerview.adapters.MainRecyclerViewAdapter;
 import com.example.twomack.nycschooldataviewer.utilities.SchoolDataUtility;
-import com.example.twomack.nycschooldataviewer.viewmodel.MainViewModel;
 import com.jakewharton.rxbinding2.support.v7.widget.RxSearchView;
 import com.jakewharton.rxbinding2.support.v7.widget.SearchViewQueryTextEvent;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 
@@ -56,12 +47,10 @@ import static com.example.twomack.nycschooldataviewer.data.MainApplication.getAp
 public class MainActivity extends AppCompatActivity implements MainRecyclerViewAdapter.OnSchoolSelectedListener {
 
     private static final int MY_PERMISSIONS_REQUEST_FINE_LOCATION = 11254;
-    private RecyclerView mRecyclerView;
     private MainRecyclerViewAdapter mAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
     private Networker networker;
-    private MainViewModel viewModel;
     public String[] usersLocation;
+    SchoolDataUtility schoolDataUtility;
 
     @Nullable @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -76,37 +65,43 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.loading_screen);
-        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
         ButterKnife.bind(this);
-        networker = new Networker();
-        CompositeDisposableModule compositeDisposableModule = new CompositeDisposableModule();
-        viewModel.setCompositeDisposableModule(compositeDisposableModule);
+        networker = Networker.getInstance();
+        schoolDataUtility = new SchoolDataUtility();
         configureObservables();
-        progressBar.setProgress(25);
+        if (progressBar != null) {
+            progressBar.setProgress(25);
+        }
 
         //here we're starting a process that will make two network calls - first one for data about NYC schools in general, then one for SAT scores.
         //the data is then combined and locked (see setSearchData()), and can retrieved by calling getSearchData().
         //setContentView(R.layout.loading_screen);
-        networker.allSchoolsDetailed();
+        networker.fetchAllSchoolsDetailed();
     }
 
+
+
+    /**
+     * (Called after you've retrieved data from the network)
+     *
+     * This method sets the content view, binds variables with Butterknife, removes the title from the toolbar and sets up your recyclerView.
+     */
     public void setUpMainView(){
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        mRecyclerView = findViewById(R.id.my_recycler_view);
+        RecyclerView mRecyclerView = findViewById(R.id.my_recycler_view);
         mRecyclerView.setHasFixedSize(true);
-
-        // use a linear layout manager
-        mLayoutManager = new LinearLayoutManager(this);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        // specify an adapter (see also next example)
         mAdapter = new MainRecyclerViewAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
 
-        toolbar.setTitle("");
+        if (toolbar != null) {
+            toolbar.setTitle("");
+        }
         setSupportActionBar(toolbar);
     }
 
@@ -116,17 +111,24 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
 
     public List<DetailedSchool> getCurrentlyDisplayedSchools(){ return getApplicationDataModule().getCurrentlyDisplayedSchools(); }
 
+    /**
+     * This method sets three observers.
+     * 1. An observer on detailSchoolList - when the network finishes downloading our list of detailed schools (and updates our list of detailed schools), this observer will update our progress bar on our loading screen,
+     * and will fire off a second network request for simple SAT scores.
+     * 2. An observer for simple SAT scores - when we've retrieved our second network request (SAT scores) this observer calls a method in our SchoolDataUtility to add these scores to our list of DetailedSchools.
+     * Our data retrieval is now done, so it then calls methods to create the UI. It also calls a method 'setSearchData()', this is a list that we can pull from (and is never modified after it has been set initially) when we want data for our searches and filters.
+     * 3. An observer that updates the recyclerView when our livedata for display schools is changed (ie: when a filter or a sort has been applied)
+     */
     private void configureObservables() {
-        getApplicationDataModule().getDetailSchoolList().observe(this, new android.arch.lifecycle.Observer<List<DetailedSchool>>() {
-            @Override
-            public void onChanged(@Nullable List<DetailedSchool> schools) {
-                if(schools != null) {
-                    if (progressBar != null){
-                        progressBar.setProgress(70);
-                    }
-                    //when you get the detailed data, begins a request for the SAT data.
-                    networker.allSchoolsSAT();
+        getApplicationDataModule().getDetailSchoolList().observe(this, (List<DetailedSchool> schools) -> {
+            if(schools != null) {
+                if (progressBar != null){
+                    progressBar.setProgress(70);
                 }
+                //when you get the detailed data, begins a request for the SAT data.
+                networker.fetchAllSchoolsSAT();
+            }else{
+                launchErrorScreen();
             }
         });
 
@@ -137,12 +139,10 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
                     if (progressBar != null){
                         progressBar.setProgress(80);
                     }
-
-                    SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
                     List<DetailedSchool> detailedList = getApplicationDataModule().getDetailSchoolList().getValue();
                     List<DetailedSchool> finalData = schoolDataUtility.appendSATScores(schools, detailedList);
-                    //here we are done making network calls: our data has been finalized, and everything can pull from our searchData now.
 
+                    //here we are done making network calls: our data has been finalized, and everything can pull from our searchData now.
                     setSearchData(finalData);
                     //calling setDisplaySchoolList updates our main UI by passing new data to the RecyclerView.
                     setUpMainView();
@@ -151,16 +151,17 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
             }
         });
         //this is where we update the RecyclerView. That occurs when this observer is triggered.
-        getApplicationDataModule().getDisplaySchoolList().observe(this, new android.arch.lifecycle.Observer<List<DetailedSchool>>() {
-            @Override
-            public void onChanged(@Nullable List<DetailedSchool> detailedSchools) {
-                if(detailedSchools != null) {
-                    mAdapter.setSchoolList(detailedSchools);
-                }
+        getApplicationDataModule().getDisplaySchoolList().observe(this, detailedSchools -> {
+            if(detailedSchools != null) {
+                mAdapter.setSchoolList(detailedSchools);
             }
         });
     }
 
+    /**
+     * Sets an observer on LiveData that holds the information taken from the filter activity. When the user hits submit on the filter activity,
+     * the filter requirements are updated and this observer is notified. This activity calls the method applyAllFilters in the SchoolDataUtility class.
+     */
     public void setUpFilterObservable(){
         getApplicationDataModule().getFilterRequirements().observe(this, new android.arch.lifecycle.Observer<List<Integer>>() {
             @Override
@@ -168,7 +169,6 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
                 if(integers != null) {
                     List<DetailedSchool> toDisplay;
                     toDisplay = new ArrayList<>(getSearchData());
-                    SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
                     toDisplay = schoolDataUtility.applyAllFilters(toDisplay, integers.get(0), integers.get(1), integers.get(2), integers.get(3), integers.get(4), integers.get(5), integers.get(6), integers.get(7), integers.get(8), integers.get(9));
                     getApplicationDataModule().setDisplaySchools(toDisplay);
                     if (toDisplay.size() == 0){
@@ -186,16 +186,21 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         return super.onCreateOptionsMenu(menu);
     }
 
+    /**
+     * This method functions as a listener for the search feature. Once it determines that the user has submitted a search, (searchViewQueryTextEvent.isSubmitted()),
+     * and the search is for at least one Character, it calls the method searchForSchoolName().
+     */
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         //finds the searchView
         final SearchView searchView =
                 (SearchView) menu.findItem(R.id.search).getActionView();
 
-        viewModel.getDisposable().add(RxSearchView.queryTextChangeEvents(searchView)
+        CompositeDisposable compositeDisposable = new CompositeDisposable();
+        compositeDisposable.add(RxSearchView.queryTextChangeEvents(searchView)
                 .map(new Function<SearchViewQueryTextEvent, CharSequence>() {
                     @Override
-                    public CharSequence apply(SearchViewQueryTextEvent searchViewQueryTextEvent) throws Exception {
+                    public CharSequence apply(SearchViewQueryTextEvent searchViewQueryTextEvent) {
 
                         if (searchViewQueryTextEvent.isSubmitted()) {
                             return searchViewQueryTextEvent.queryText();
@@ -205,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
                 }).observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<CharSequence>() {
                     @Override
-                    public void accept(CharSequence charSequence) throws Exception {
+                    public void accept(CharSequence charSequence) {
                         //charSequence is your search you're about to execute.
                         if (charSequence.length() == 0) {
                             return;
@@ -215,95 +220,102 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
 
                         //dismiss keyboard and close search view
                         searchView.setIconified(true);
-                        toolbar.collapseActionView();
+                        if (toolbar != null) {
+                            toolbar.collapseActionView();
+                            compositeDisposable.dispose();
+                        }
                     }
                 }));
         return super.onPrepareOptionsMenu(menu);
     }
 
+    /**
+     *
+     * @param charSequence - what the user is searching for, submitted in the search bar.
+     * This method prepares the search data by changing it to all-lowercase, (eliminating an earlier bug where searches were case-sensitive)
+     * And calls a method in our SchoolDataUtility to filter the display list down to only the schools that contain that search in their name.
+     *
+     */
     public void searchForSchoolName(CharSequence charSequence) {
 
         //this is done to eliminate case-sensitivity
-        String chars = charSequence.toString();
-        chars = chars.toLowerCase();
-        CharSequence searchChars = chars;
+        CharSequence searchChars = charSequence.toString().toLowerCase();
 
         List<DetailedSchool> list = getSearchData();
-        List<DetailedSchool> result = null;
-            SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
-            result = schoolDataUtility.filterByName(list, searchChars);
-        //}
+        List<DetailedSchool> result;
+         result = schoolDataUtility.filterByName(list, searchChars);
+
         getApplicationDataModule().setDisplaySchools(result);
         if (result.size() == 0){
             launchErrorScreen();
         }
     }
 
+    //region menu clickListeners
+
+    /**
+     * If the app has the correct permissions and location services turned on, it sorts the schools by distance. Otherwise, it requests permissions and location services accordingly.
+     */
     public void viewSchoolsByDistance(MenuItem m) {
 
         if (usersLocation != null) {
-            //changing this list parameter would change the result of the returned values. In other words, you could run more complex searches by
-            //limiting this list first to say, Manhattan, or schools with average SAT scores > 1200, then sorting by distance. Currently, by calling
-            //getSearchData, you're retrieving a fresh dataset, which precludes more advanced filtering. You could overload the method, have it accept List as well?
-            List<DetailedSchool> list = new ArrayList<>(getSearchData());
-
-            SchoolDataUtility su = new SchoolDataUtility();
-            List<DetailedSchool> allSchoolsByDistance = su.getSchoolDistances(list, usersLocation[0], usersLocation[1]);
-            List<DetailedSchool> schoolsByDistance = su.getSchoolDistances(getCurrentlyDisplayedSchools(), usersLocation[0], usersLocation[1]);
-
-            //this ends up populating this list to the RecycleView.
+            List<DetailedSchool> schoolsByDistance = schoolDataUtility.getSchoolDistances(getCurrentlyDisplayedSchools(), usersLocation[0], usersLocation[1]);
+            //this ends up populating this list to the RecycleView via observers.
             getApplicationDataModule().setDisplaySchools((schoolsByDistance));
         } else {
+            //setUsersLocation includes a callback to viewSchoolsByDistance once it sets usersLocation - in other words,
+            // if permission is granted and location services is turned on, it sorts the list and displays it.
             setUsersLocation();
         }
     }
 
     public void viewSchoolsBySATScore(MenuItem m) {
-        SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
         List<DetailedSchool> sortedBySAT = schoolDataUtility.sortListBySAT(getCurrentlyDisplayedSchools());
         getApplicationDataModule().setDisplaySchools((sortedBySAT));
     }
 
     public void viewSchoolsBySafety(MenuItem m) {
-        SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
         List<DetailedSchool> sortedBySafety = schoolDataUtility.sortListBySafety(getCurrentlyDisplayedSchools());
         getApplicationDataModule().setDisplaySchools(sortedBySafety);
     }
 
     public void viewSchoolsByGraduationRate(MenuItem m){
-        SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
         List<DetailedSchool> sortedByGraduation = schoolDataUtility.sortListByGraduation(getCurrentlyDisplayedSchools());
         getApplicationDataModule().setDisplaySchools(sortedByGraduation);
     }
 
     public void viewSchoolsByCollegeRate(MenuItem m){
-        SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
         List<DetailedSchool> sortedByCollege = schoolDataUtility.sortListByCollegeRate(getCurrentlyDisplayedSchools());
         getApplicationDataModule().setDisplaySchools(sortedByCollege);
     }
 
     public void viewSchoolsByAPNumber(MenuItem m){
-        SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
         List<DetailedSchool> sortedByAP = schoolDataUtility.sortListByNumberOfAPs(getCurrentlyDisplayedSchools());
         getApplicationDataModule().setDisplaySchools(sortedByAP);
     }
 
     public void viewSchoolsByNeighborhood(MenuItem m){
-        SchoolDataUtility schoolDataUtility = new SchoolDataUtility();
         List<DetailedSchool> sortListByNeighborhood = schoolDataUtility.sortListByNeighborhood(getCurrentlyDisplayedSchools());
         getApplicationDataModule().setDisplaySchools(sortListByNeighborhood);
     }
 
-
+    /**
+     * starts the FilterActivity.
+     */
     public void filterMenuButtonClicked(MenuItem m){
         setUpFilterObservable();
         Intent intent = new Intent(this, FilterActivity.class);
         startActivity(intent);
     }
+    //endregion
 
+    //region location methods
+
+    /**
+     * If location permissions haven't been granted, it requests them (and sets the users location in the permissions result if they were granted subsequently)
+     * If permissions are ok, it attempts to find the users location, and if that fails, notifies the user that their location services may not be on.
+     */
     public void setUsersLocation() {
-        Location location = null;
-        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         //in other words, if permission hasn't already been granted...
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             String[] permissions = new String[1];
@@ -311,7 +323,7 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
             ActivityCompat.requestPermissions(this, permissions, MY_PERMISSIONS_REQUEST_FINE_LOCATION);
         } else {
 
-            location = findLastLocation();
+            Location location = findLastLocation();
 
             if (location != null) {
                 updateLocUtil(location);
@@ -324,9 +336,14 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         }
     }
 
+    /**
+     * If permissions have been granted, this makes a call to viewSchoolsByDistance (which sorts the schools by distance and updates the UI).
+     * If it is still unable to find the users' location despite being given permission, it suggests that the user turn on location services.
+     *
+     */
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Location location = null;
+        Location location;
 
         if (grantResults.length > 0
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -346,6 +363,10 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         }
     }
 
+    /**
+     * Given the location of the user, this method simply extracts and formats the latitude and longitude and updates an instance variable.
+     * @param location the location of the user.
+     */
     private void updateLocUtil(Location location) {
         double longitude = location.getLongitude();
         double latitude = location.getLatitude();
@@ -358,27 +379,40 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         usersLocation = locationString;
     }
 
+    /**
+     *
+     * @return the last known location of the user.
+     *
+     * Finds the last known location of the user. Tests all three location providers (gps, network, and passive) and returns the most accurate reading.
+     */
     public Location findLastLocation() {
-        LocationManager mLocationManager;
-        mLocationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
-        List<String> providers = mLocationManager.getProviders(true);
+        LocationManager mLocationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
+        List<String> providers = null;
+        if (mLocationManager != null) {
+            providers = mLocationManager.getProviders(true);
+        }
         Location bestLocation = null;
-        for (String provider : providers) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                return null;
-            }
-            Location l = mLocationManager.getLastKnownLocation(provider);
-            if (l == null) {
-                continue;
-            }
-            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
-                // Found best last known location: %s", l);
-                bestLocation = l;
+        if (providers != null) {
+            for (String provider : providers) {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    return null;
+                }
+                Location l = mLocationManager.getLastKnownLocation(provider);
+                if (l == null) {
+                    continue;
+                }
+                if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+                    // Found best last known location: %s", l);
+                    bestLocation = l;
+                }
             }
         }
         return bestLocation;
     }
 
+    /**
+     * Notifies the user that location services may not be active, and starts an activity that gives them the option to it on.
+     */
     public void notifyUserGPS(){
         // notify user
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
@@ -386,24 +420,18 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         dialog.setPositiveButton(this.getResources().getString(R.string.open_loc_settings), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                // TODO Auto-generated method stub
                 Intent myIntent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivity(myIntent);
                 //get gps
             }
         });
-        dialog.setNegativeButton(this.getString(R.string.Cancel), new DialogInterface.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                // TODO Auto-generated method stub
-
-            }
-        });
         dialog.show();
-
     }
+    //endregion
 
+    /**
+     * When a school in the recyclerView is clicked, this method launches the SchoolDetailActivity (shows a screen with school details).
+     */
     @Override
     public void onSchoolClicked(int position) {
         Intent intent = new Intent(this, SchoolDetailActivity.class);
